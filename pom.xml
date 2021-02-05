@@ -43,6 +43,43 @@
         </dependencies>
     </dependencyManagement>
 
+
+    <!-- maven upload central repository -->
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<name>wangjiale</name>
+			<email>wjmx1214@sina.com</email>
+			<organization>https://github.com/wjmx1214</organization>
+			<url>https://github.com/wjmx1214</url>
+		</developer>
+	</developers>
+	<scm>
+	    <url>https://github.com/wjmx1214/bootdao</url>
+	    <connection>scm:git:https://github.com/wjmx1214/bootdao.git</connection>
+	    <developerConnection>scm:git:https://github.com/wjmx1214/bootdao.git</developerConnection>
+	</scm>
+	<parent>
+	    <groupId>org.sonatype.oss</groupId>
+	    <artifactId>oss-parent</artifactId>
+	    <version>7</version>
+	</parent>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -73,6 +110,40 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- javadoc attach plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                	<aggregate>true</aggregate>
+                	<charset>UTF-8</charset>
+                	<encoding>UTF-8</encoding>
+                	<docencoding>UTF-8</docencoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration><doclint>none</doclint></configuration> <!-- close java8 check javadoc error  -->
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- gpg attach plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
         </plugins>
     </build>
 
