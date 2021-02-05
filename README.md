@@ -25,7 +25,7 @@
  pom：
  
 	 <dependency>
-        <groupId>com.boot.dao</groupId>
+        <groupId>com.bootdao</groupId>
         <artifactId>bootdao-spring-boot-starter</artifactId>
         <version>1.0.0</version>
     </dependency>
