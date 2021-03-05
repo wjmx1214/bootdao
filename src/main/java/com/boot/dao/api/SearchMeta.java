@@ -14,10 +14,10 @@ import java.lang.annotation.Target;
 
 		private Long id;
 
-		@SearchMeta(columnName="stu_name", searchType=SearchType.like_right)
+		+@SearchMeta(columnName="stu_name", searchType=SearchType.like_right)
 		private String name;
 
-		@SearchMeta(columnName="stu_name", searchType=SearchType.like_all, whereIndex=2, tableLabel="s")
+		+@SearchMeta(columnName="stu_name", searchType=SearchType.like_all, whereIndex=2, tableLabel="s")
 		private String name2;
 
 	}
@@ -44,7 +44,7 @@ import java.lang.annotation.Target;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.0.0
+	@version 1.0.1
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target(ElementType.FIELD) 						// 定义注解的作用目标(类，常量，字段，方法等)
@@ -53,33 +53,33 @@ public @interface SearchMeta {
 	
     /**
      * 查询方式(默认equal)
-     * @return
+     * @return SearchType
      */
 	SearchType searchType() default SearchType.equal;
 	
 	/**
 	 * 表别名
-	 * @return
+	 * @return String
 	 */
 	String tableLabel() default "";
 	
 	/**
 	 * 列名或列别名
-	 * @return
+	 * @return String
 	 */
 	String columnName() default "";
 	
 	/**
 	 * 是否开启驼峰转换, 可省去配置列名(true=开启)
-	 * @return
+	 * @return boolean
 	 */
 	boolean isHump() default true;
 
 	/**
 	 * 条件索引(多表或子查询时, 若出现多处where或having, 则利用此索引进行区分, 按阅读顺序)<br>
 	 * 默认=1, 即默认只有一处where
-	 * @return
+	 * @return int
 	 */
 	int whereIndex() default 1;
 
-}  
+}
