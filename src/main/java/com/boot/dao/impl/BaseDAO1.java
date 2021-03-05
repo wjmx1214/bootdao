@@ -8,7 +8,7 @@ import com.boot.dao.api.IBaseDAO1;
 /**
  * 数据源datasource1对应的DAO
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 @Repository
 @ConditionalOnProperty(prefix="spring.datasource.datasource1", name="username") //配置了才注册
