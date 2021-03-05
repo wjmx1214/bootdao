@@ -7,6 +7,6 @@ package com.boot.dao.api;
  * 可支持继承此接口的实现类BaseDAO并加入@Repository注解, 继续封装独有需求的获取数据函数<br>
  * 除非有新增函数或重写函数需求, 否则不建议继承, 直接注入使用
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 public interface IBaseDAO extends IBaseEntityDAO{}
