@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * 多条件动态查询父类(分页)
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 public abstract class PageSearch extends BaseSearch{
 
@@ -57,7 +57,7 @@ public abstract class PageSearch extends BaseSearch{
 	 * @param sql
 	 * @param countSQL 总记录SQL, 可以不用编写<br>
 	 * 但考虑到复杂SQL的性能问题, 此处保留自定义功能, 但查询条件须与SQL相同
-	 * @return
+	 * @return String
 	 */
 	public final String appendWhere(String sql, String countSQL) {
 		if(super.append)
