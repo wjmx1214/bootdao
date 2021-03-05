@@ -3,7 +3,7 @@ package com.boot.dao.api;
 /**
  * 多条件动态查询方式枚举(简写版)
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 public enum SType {
 	
@@ -59,6 +59,14 @@ public enum SType {
 	 */
 	bet		(" between ? and ?"),
 	/**
+	 * is empty 是空白
+	 */
+	em_is	(" = ''"),
+	/**
+	 * is not empty 不是空白
+	 */
+	em_not	(" <> ''"),
+	/**
 	 * is null 是空值
 	 */
 	nu_is	(" is null"),
@@ -75,7 +83,7 @@ public enum SType {
 	/**
 	 * 获取枚举实例
 	 * @param code
-	 * @return
+	 * @return SType
 	 */
 	public static SType getType(String code){
 		for(SType type : SType.values()){
