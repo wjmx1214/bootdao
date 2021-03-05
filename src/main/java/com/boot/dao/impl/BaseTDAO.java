@@ -12,13 +12,14 @@ import com.boot.dao.api.IBaseEntityDAO;
 import com.boot.dao.api.Page;
 import com.boot.dao.api.PageSearch;
 import com.boot.dao.util.ApplicationContextUtil;
+import com.boot.dao.util.BaseDAOLog;
 
 /**
  * 数据访问封装类(适合需要DAO层的模型, 继承此类直接支持类泛型)<br>
  * 可指定一个带数据源的DAO来构造, 若未指定则默认为BaseDAO
  * @param <T>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 @Import(BaseDAO.class)
 public abstract class BaseTDAO<T>{
@@ -47,7 +48,7 @@ public abstract class BaseTDAO<T>{
 	
 	/**
 	 * 更多数据获取方式
-	 * @return
+	 * @return IBaseEntityDAO
 	 */
 	public IBaseEntityDAO DAO() {
 		if(this.DAO == null) {
@@ -74,7 +75,7 @@ public abstract class BaseTDAO<T>{
 				if(!"T".equals(ptype.toString())) {
 					classT = (Class<T>)ptype;
 				}else {
-					new Exception("未指定泛型类型!").printStackTrace();
+					BaseDAOLog.printException(new Exception("未指定泛型类型!"));
 				}
 			}
 		}
@@ -84,7 +85,7 @@ public abstract class BaseTDAO<T>{
 	/**
 	 * 保存对象(新增或更新)(空字符更新)
 	 * @param t
-	 * @return
+	 * @return <T>
 	 * @throws Exception
 	 */
 	public T save_empty(T t) throws Exception{
@@ -94,7 +95,7 @@ public abstract class BaseTDAO<T>{
 	/**
 	 * 保存对象(新增或更新)
 	 * @param t
-	 * @return
+	 * @return <T>
 	 * @throws Exception
 	 */
 	public T save(T t) throws Exception{
@@ -105,7 +106,7 @@ public abstract class BaseTDAO<T>{
 	 * 根据SQL查找对象集合
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return
+	 * @return List<T>
 	 */
 	public List<T> list(String sql, Object... params){
 		return DAO().getEntitys(sql, classT, params);
@@ -116,7 +117,7 @@ public abstract class BaseTDAO<T>{
 	 * @param sql
 	 * @param columnNameKey 将指定的列名作为key
 	 * @param params SQL语句中对应的?号参数
-	 * @return
+	 * @return Map<String, T>
 	 */
 	public Map<String, T> listMap(String sql, String columnNameKey, Object... params){
 		return DAO().getEntitysMap(sql, columnNameKey, classT, params);
@@ -144,7 +145,7 @@ public abstract class BaseTDAO<T>{
 	 * 根据SQL查找对象
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return
+	 * @return <T>
 	 */
 	public T get(String sql, Object... params){
 		return DAO().getEntity(sql, classT, params);
@@ -153,7 +154,7 @@ public abstract class BaseTDAO<T>{
 	/**
 	 * 根据主键查找对象
 	 * @param pk
-	 * @return
+	 * @return <T>
 	 */
 	public T get(Serializable pk){
 		return DAO().getByPK(pk, classT);
@@ -163,7 +164,7 @@ public abstract class BaseTDAO<T>{
 	 * 根据唯一列查找对象
 	 * @param columnName
 	 * @param value
-	 * @return
+	 * @return <T>
 	 */
 	public T getByColumn(String columnName, Object value){
 		return DAO().getByColumn(columnName, value, classT);
@@ -172,7 +173,7 @@ public abstract class BaseTDAO<T>{
 	/**
 	 * 分页包装(目前仅支持MYSQL)
 	 * @param search
-	 * @return
+	 * @return Page<T>
 	 */
 	public Page<T> page(PageSearch search){
 		return DAO().page(search, classT);
@@ -181,7 +182,7 @@ public abstract class BaseTDAO<T>{
 	/**
 	 * 分页包装(目前仅支持MYSQL)
 	 * @param search
-	 * @return Map《String, Object》
+	 * @return Page<Map<String, Object>>
 	 */
 	@SuppressWarnings("rawtypes")
 	public Page<Map> pageMap(PageSearch search){
