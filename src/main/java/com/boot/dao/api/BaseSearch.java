@@ -11,7 +11,7 @@ import com.boot.dao.mapping.BaseSearchMapping;
 /**
  * 多条件动态查询父类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 public abstract class BaseSearch{
 
@@ -50,7 +50,7 @@ public abstract class BaseSearch{
 		List<BaseSearchMapping> sms = BaseMappingCache.getSearchMapping(this.getClass());
 		for (BaseSearchMapping sm : sms) {
 			if(sm.whereIndex == index) {
-				if(sm.searchType == SType.nu_is || sm.searchType == SType.nu_not) {
+				if(sm.searchType == SType.nu_is || sm.searchType == SType.nu_not || sm.searchType == SType.em_is || sm.searchType == SType.em_not) {
 					where.append(" and ").append(sm.tableLabel).append(sm.columnName).append(sm.searchType.code);
 					continue;
 				}
