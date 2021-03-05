@@ -21,13 +21,13 @@ import com.boot.dao.config.BaseDAOConfig;
 import com.boot.dao.mapping.BaseColumnMapping;
 import com.boot.dao.mapping.BaseMappingCache;
 import com.boot.dao.mapping.BaseTableMapping;
+import com.boot.dao.util.BaseDAOLog;
 import com.boot.dao.util.BaseDAOUtil;
 
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @author yyyy-MM-dd update
- * @version 1.0.0
+ * @version 1.0.1
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
@@ -40,7 +40,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	/**
 	 * 批量处理
 	 * @param sqls
-	 * @return 
+	 * @return int
 	 * @throws Exception 
 	 */
 	@Override
@@ -49,7 +49,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		PreparedStatement ps = null;
 		try {
 			for (int i = 0; i < sqls.length; i++) {
-				BaseDAOUtil.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sqls[i]);
+				BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sqls[i]);
 				if(i == 0) {
 					ps = super.getConnection().prepareStatement(sqls[0]);
 					ps.addBatch();
@@ -74,7 +74,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * 批量处理
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return int
 	 * @throws Exception 
 	 */
 	@Override
@@ -85,7 +85,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 			if(params != null){
 				for (int i = 0; i < params.size(); i++) {
 					if(i == 0) {
-						BaseDAOUtil.printSQLAndParam(BaseDAOConfig.showSQL, false, sql, params);
+						BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, false, sql, params);
 						ps = super.getConnection().prepareStatement(sql);
 						ps.addBatch();
 					}else{
@@ -93,7 +93,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 					}
 				}
 				for (int i = 0; i < params.size(); i++) {
-					BaseDAOUtil.printSQLAndParam(false, BaseDAOConfig.showParam, sql, params);
+					BaseDAOLog.printSQLAndParam(false, BaseDAOConfig.showParam, sql, params);
 					BaseDAOUtil.setParams(ps, params.get(i)); //设置参数
 				}
 			}
@@ -114,12 +114,12 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * 插入一条记录并返回记录ID(自增)
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return long
 	 * @throws Exception
 	 */
 	@Override
 	public long insertAndGetId(String sql, Object... params) throws Exception{
-		BaseDAOUtil.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sql, params);
+		BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sql, params);
 		long id = 0;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -143,12 +143,12 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * 增,删,改
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return int
 	 * @throws Exception 
 	 */
 	@Override
 	public int updateSQL(String sql, Object... params) throws Exception{
-		BaseDAOUtil.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sql, params);
+		BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sql, params);
 		int count = 0;//受影响行数
 		PreparedStatement ps = null;
 		try{
@@ -173,7 +173,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 			if(rs != null) rs.close();
 			if(ps != null) ps.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		}
 	}
 	
@@ -184,7 +184,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param sql
 	 * @param clz java基础类型
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return <A>
 	 */
 	protected <A> A getObject(String sql, Class<A> clz,  Object... params){
 		BaseJDBCQuery jq = new BaseJDBCQuery();
@@ -194,7 +194,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				return this.getValueByJavaType(jq.rs, 1, clz);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		} finally{
 			jq.close();
 		}
@@ -206,7 +206,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param sql
 	 * @param clz java基础类型
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<A>
 	 */
 	@Override
 	public <A> List<A> getColumnOne(String sql, Class<A> clz, Object... params){
@@ -218,7 +218,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				list.add(this.getValueByJavaType(jq.rs, 1, clz));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		} finally{
 			jq.close();
 		}
@@ -231,7 +231,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param sql
 	 * @param clz java基础类型
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Map<String, A>
 	 */
 	@Override
 	public <A> Map<String, A> getColumnTwo(String sql, Class<A> clz, Object... params){
@@ -246,7 +246,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		} finally{
 			jq.close();
 		}
@@ -257,7 +257,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * 获取Array集合
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<Object[]>
 	 */
 	@Override
 	public List<Object[]> getArrays(String sql, Object... params){
@@ -272,7 +272,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				list.add(array);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		} finally{
 			jq.close();
 		}
@@ -283,7 +283,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * 获取Array集合
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<String[]>
 	 */
 	@Override
 	public List<String[]> getArraysString(String sql, Object... params){
@@ -298,7 +298,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				list.add(array);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		} finally{
 			jq.close();
 		}
@@ -309,7 +309,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * 获取Map集合
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<Map<String, Object>>
 	 */
 	@Override
 	public List<Map<String, Object>> getMaps(String sql, Object... params){
@@ -324,7 +324,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				list.add(map);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		} finally{
 			jq.close();
 		}
@@ -335,7 +335,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * 获取Map集合
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<Map<String, String>>
 	 */
 	@Override
 	public List<Map<String, String>> getMapsString(String sql, Object... params){
@@ -350,7 +350,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				list.add(map);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		} finally{
 			jq.close();
 		}
@@ -364,7 +364,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param sql
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return <T>
 	 */
 	@Override
 	public <T> T getEntity(String sql, Class<T> clz, Object... params){
@@ -377,7 +377,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param sql
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return <T>
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -405,7 +405,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				break;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		} finally{
 			jq.close();
 		}
@@ -417,7 +417,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param sql
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<T>
 	 */
 	@Override
 	public <T> List<T> getEntitys(String sql, Class<T> clz, Object... params){
@@ -430,7 +430,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param sql
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<T>
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -459,7 +459,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				list.add(t);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		} finally{
 			jq.close();
 		}
@@ -472,7 +472,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param columnNameKey 将指定的列名作为key
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Map<String, T>
 	 */
 	@Override
 	public <T> Map<String, T> getEntitysMap(String sql, String columnNameKey, Class<T> clz, Object... params){
@@ -486,7 +486,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param columnNameKey 将指定的列名作为key
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Map<String, T>
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -522,7 +522,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		} finally{
 			jq.close();
 		}
@@ -534,7 +534,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param rs
 	 * @param index
 	 * @param clz java基础类型
-	 * @return 
+	 * @return <A>
 	 * @throws SQLException
 	 */
 	protected <A> A getValueByJavaType(ResultSet rs, int index, Class<A> clz) throws SQLException{
@@ -546,7 +546,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param rs
 	 * @param index
 	 * @param clz java基础类型
-	 * @return 
+	 * @return <A>
 	 * @throws SQLException
 	 */
 	@SuppressWarnings("unchecked")
@@ -630,7 +630,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * 将时间戳格式化为String
 	 * @param time
 	 * @param pattern
-	 * @return
+	 * @return String
 	 */
 	protected String formatDate(long time, String pattern) {
 		pattern = (pattern == null || pattern.length() == 0) ? BaseDAOConfig.formatTime : pattern;
