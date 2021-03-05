@@ -5,12 +5,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import com.boot.dao.config.BaseDAOConfig;
+import com.boot.dao.util.BaseDAOLog;
 import com.boot.dao.util.BaseDAOUtil;
 
 /**
  * 查询封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 class BaseJDBCQuery {
 
@@ -28,7 +29,7 @@ class BaseJDBCQuery {
 	 * @throws Exception
 	 */
 	ResultSet query(Connection conn, String sql, Object... params) throws Exception {
-		BaseDAOUtil.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sql, params);
+		BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sql, params);
 		this.ps = conn.prepareStatement(sql);
 		BaseDAOUtil.setParams(ps, params); 	//设置参数
 		this.rs = ps.executeQuery(); 		//获取结果集
@@ -44,7 +45,7 @@ class BaseJDBCQuery {
 			if(rs != null) rs.close();
 			if(ps != null) ps.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		}
 	}
 
