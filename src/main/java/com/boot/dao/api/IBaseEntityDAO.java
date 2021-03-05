@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * 实体封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 public interface IBaseEntityDAO extends IBaseJDBC{
 
@@ -16,7 +16,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取boolean型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return boolean
 	 */
 	boolean getboolean(String sql, Object... params);
 	
@@ -24,7 +24,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取int型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return int
 	 */
 	int getint(String sql, Object... params);
 	
@@ -32,7 +32,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取Integer型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Integer
 	 */
 	Integer getInteger(String sql, Object... params);
 	
@@ -40,7 +40,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取long型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return long
 	 */
 	long getlong(String sql, Object... params);
 	
@@ -48,7 +48,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取Long型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Long
 	 */
 	Long getLong(String sql, Object... params);
 	
@@ -56,7 +56,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取float型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return float
 	 */
 	float getfloat(String sql, Object... params);
 	
@@ -64,7 +64,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取Float型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Float
 	 */
 	Float getFloat(String sql, Object... params);
 	
@@ -72,7 +72,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取double型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return double
 	 */
 	double getdouble(String sql, Object... params);
 	
@@ -80,7 +80,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取Double型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Double
 	 */
 	Double getDouble(String sql, Object... params);
 	
@@ -88,7 +88,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取String型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return String
 	 */
 	String getString(String sql, Object... params);
 	
@@ -96,7 +96,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取java.util.Date型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Date
 	 */
 	Date getDate(String sql, Object... params);
 	
@@ -104,7 +104,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取byte[]型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return byte[]
 	 */
 	byte[] getbytes(String sql, Object... params);
 	
@@ -112,7 +112,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取BigDecimal型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return BigDecimal
 	 */
 	BigDecimal getBigDecimal(String sql, Object... params);
 	
@@ -120,7 +120,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取Object型单值(java基础类型)
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return <A>
 	 */
 	<A> A getObject(String sql, Object... params);
 	
@@ -128,7 +128,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取一行数据
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Map<String, Object>
 	 */
 	Map<String, Object> getRowOne(String sql, Object... params);
 	
@@ -136,14 +136,14 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 获取一行数据
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Map<String, String>
 	 */
 	Map<String, String> getRowOneString(String sql, Object... params);
 
 	/**
 	 * 新增或更新(空字符更新)
 	 * @param t
-	 * @return 
+	 * @return <T>
 	 * @throws Exception
 	 */
 	<T> T save_empty(T t) throws Exception;
@@ -151,7 +151,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	/**
 	 * 新增或更新
 	 * @param t
-	 * @return 
+	 * @return <T>
 	 * @throws Exception
 	 */
 	<T> T save(T t) throws Exception;
@@ -175,7 +175,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 根据主键查找对象
 	 * @param pk
 	 * @param clz
-	 * @return 
+	 * @return <T>
 	 */
 	<T> T getByPK(Serializable pk, Class<T> clz);
 	
@@ -184,7 +184,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @param columnName
 	 * @param value
 	 * @param clz
-	 * @return 
+	 * @return <T>
 	 */
 	<T> T getByColumn(String columnName, Object value, Class<T> clz);
 	
@@ -192,14 +192,14 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * 分页包装(目前仅支持MYSQL)
 	 * @param search
 	 * @param clz
-	 * @return
+	 * @return Page<T>
 	 */
 	<T> Page<T> page(PageSearch search, Class<T> clz);
 	
 	/**
 	 * 分页包装(目前仅支持MYSQL)
 	 * @param search
-	 * @return Map《String, Object》
+	 * @return Page<Map<String, Object>>
 	 */
 	@SuppressWarnings("rawtypes")
 	Page<Map> pageMap(PageSearch search);
@@ -211,7 +211,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @param sql
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return
+	 * @return Page<T>
 	 */
 	<T> Page<T> page(int pageIndex, int pageSize, String sql, Class<T> clz, Object... params);
 	
@@ -221,7 +221,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @param pageSize
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return Map《String, Object》
+	 * @return Page<Map<String, Object>>
 	 */
 	@SuppressWarnings("rawtypes")
 	Page<Map> pageMap(int pageIndex, int pageSize, String sql, Object... params);
