@@ -13,7 +13,7 @@ import java.util.jar.JarFile;
 /**
  * 扫描指定包下所有类名
  * @author unknown date create ZENG.XIAO.YAN
- * @version 1.0.0
+ * @version 1.0.1
  */
 public abstract class BaseScanClassUtil {
 
@@ -47,7 +47,7 @@ public abstract class BaseScanClassUtil {
 						try {
 							jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
 						} catch (Exception e) {
-							e.printStackTrace();
+							BaseDAOLog.printException(e);
 						}
 						if (jarFile != null) {
 							result.addAll(getAllClassNameByJar(jarFile, packageName, showChildPackageFlag));
@@ -56,7 +56,7 @@ public abstract class BaseScanClassUtil {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		}
 		return result;
 	}
