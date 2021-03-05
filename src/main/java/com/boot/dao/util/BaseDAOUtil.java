@@ -14,22 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * DAO工具类
  * @author 2020-12-01 create wang.jia.le
- * @author yyyy-MM-dd update
- * @version 1.0.0
+ * @version 1.0.1
  */
-@Slf4j
 public abstract class BaseDAOUtil {
 
 	/**
 	 * 对象复制(相同或不同对象)
 	 * @param fromObj
 	 * @param toObj
-	 * @return
+	 * @return <T>
 	 * @throws Exception
 	 */
 	public static <T> T copy(Object fromObj, T toObj) throws Exception{
@@ -68,7 +64,7 @@ public abstract class BaseDAOUtil {
 	/**
 	 * 获取指定类型所有的属性(自身公有，私有，父类公有)
 	 * @param clz
-	 * @return
+	 * @return Field[]
 	 */
 	public static Field[] getAllFields(Class<?> clz){
 		if(clz == null)
@@ -138,32 +134,10 @@ public abstract class BaseDAOUtil {
 		}
 	}
 	
-	/**
-	 * 显示SQL或参数
-	 * @param showSQL
-	 * @param showParam
-	 * @param sql
-	 * @param params
-	 */
-	public static void printSQLAndParam(boolean showSQL, boolean showParam, String sql, Object... params) {
-		if(showSQL)
-			log.info(sql);
-		if(showParam && params != null) {
-			StringBuffer sb = new StringBuffer();
-			for (int i = 0; i < params.length; i++) {
-				sb.append(params[i] == null ? "null" : params[i].toString()).append(',');
-			}
-			int len = sb.length();
-			sb = (len > 0) ? sb.replace(len-1, len, "]") : sb.append(']');
-			sb.insert(0, "sqlParams: [");
-			log.info(sb.toString());
-		}
-	}
-	
     /**
      * 字符串驼峰转下划线
      * @param str
-     * @return
+     * @return String
      */
 	public static String humpToUnderline(String str) {
 		//return str.replaceAll("[A-Z]", "_$0").toLowerCase();
@@ -188,7 +162,7 @@ public abstract class BaseDAOUtil {
 	 * 拼接分页语句, 仅限MYSQL
 	 * @param index 当前页 从1开始
 	 * @param size 每页显示总数(若为0, 则代表不做分页)
-	 * @return
+	 * @return String
 	 */
 	public static String appendPage(int index, int size){
 		if(size < 1) 
@@ -202,7 +176,7 @@ public abstract class BaseDAOUtil {
 	 * 通过属性名获取对应get方法
 	 * @param clz
 	 * @param fieldName
-	 * @return
+	 * @return Method
 	 */
 	public Method findGetMethod(Class<?> clz, String fieldName) {
 		if(fieldName == null || fieldName.length() == 0)
@@ -213,7 +187,7 @@ public abstract class BaseDAOUtil {
 	    try {
 	        return clz.getMethod(methodName);
 	    } catch (NoSuchMethodException e) {
-	        e.printStackTrace();
+	    	BaseDAOLog.printException(e);
 	    }
 	    return null;
 	}
@@ -223,7 +197,7 @@ public abstract class BaseDAOUtil {
 	 * @param clz
 	 * @param fieldName
 	 * @param parameterTypes
-	 * @return
+	 * @return Method
 	 */
 	public Method findSetMethod(Class<?> clz, String fieldName, Class<?> parameterTypes) {
 		if(fieldName == null || fieldName.length() == 0 || parameterTypes == null)
@@ -234,7 +208,7 @@ public abstract class BaseDAOUtil {
 	    try {
 	        return clz.getMethod(methodName, parameterTypes);
 	    } catch (NoSuchMethodException e) {
-	        e.printStackTrace();
+	    	BaseDAOLog.printException(e);
 	    }
 	    return null;
 	}
