@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 /**
  * 列映射
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class BaseColumnMapping {
 
