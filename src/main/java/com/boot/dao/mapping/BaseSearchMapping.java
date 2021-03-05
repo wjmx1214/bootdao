@@ -3,11 +3,12 @@ package com.boot.dao.mapping;
 import java.lang.reflect.Field;
 
 import com.boot.dao.api.SType;
+import com.boot.dao.util.BaseDAOLog;
 
 /**
  * 多条件动态查询映射
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class BaseSearchMapping {
 
@@ -21,7 +22,7 @@ public class BaseSearchMapping {
 		try {
 			return searchField.get(search);
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		}
 		return null;
 	}
