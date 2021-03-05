@@ -6,14 +6,14 @@ import java.util.Map;
 /**
  * JDBC封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 public interface IBaseJDBC {
 	
 	/**
 	 * 批量处理
 	 * @param sqls
-	 * @return 
+	 * @return int
 	 * @throws Exception 
 	 */
 	int updateBatchSQL(String[] sqls) throws Exception;
@@ -22,7 +22,7 @@ public interface IBaseJDBC {
 	 * 批量处理
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return int
 	 * @throws Exception 
 	 */
 	int updateBatchSQL(String sql, List<Object[]> params) throws Exception;
@@ -31,7 +31,7 @@ public interface IBaseJDBC {
 	 * 插入一条记录并返回记录ID(自增)
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return long
 	 * @throws Exception
 	 */
 	long insertAndGetId(String sql, Object... params) throws Exception;
@@ -40,7 +40,7 @@ public interface IBaseJDBC {
 	 * 增,删,改
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return int
 	 * @throws Exception 
 	 */
 	int updateSQL(String sql, Object... params) throws Exception;
@@ -50,7 +50,7 @@ public interface IBaseJDBC {
 	 * @param sql
 	 * @param clz java基础类型
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<A>
 	 */
 	<A> List<A> getColumnOne(String sql, Class<A> clz, Object... params);
 	
@@ -60,7 +60,7 @@ public interface IBaseJDBC {
 	 * @param sql
 	 * @param clz java基础类型
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Map<String, A>
 	 */
 	<A> Map<String, A> getColumnTwo(String sql, Class<A> clz, Object... params);
 	
@@ -68,7 +68,7 @@ public interface IBaseJDBC {
 	 * 获取Array集合
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<Object[]>
 	 */
 	List<Object[]> getArrays(String sql, Object... params);
 	
@@ -76,7 +76,7 @@ public interface IBaseJDBC {
 	 * 获取Array集合
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<String[]>
 	 */
 	List<String[]> getArraysString(String sql, Object... params);
 
@@ -84,7 +84,7 @@ public interface IBaseJDBC {
 	 * 获取Map集合
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<Map<String, Object>>
 	 */
 	List<Map<String, Object>> getMaps(String sql, Object... params);
 	
@@ -92,7 +92,7 @@ public interface IBaseJDBC {
 	 * 获取Map集合
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<Map<String, String>>
 	 */
 	List<Map<String, String>> getMapsString(String sql, Object... params);
 
@@ -101,7 +101,7 @@ public interface IBaseJDBC {
 	 * @param sql
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return <T>
 	 */
 	<T> T getEntity(String sql, Class<T> clz, Object... params);
 	
@@ -111,7 +111,7 @@ public interface IBaseJDBC {
 	 * @param sql
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return <T>
 	 */
 	<T> T getInnerEntity(Object outer, String sql, Class<T> clz, Object... params);
 
@@ -120,7 +120,7 @@ public interface IBaseJDBC {
 	 * @param sql
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<T>
 	 */
 	<T> List<T> getEntitys(String sql, Class<T> clz, Object... params);
 	
@@ -130,7 +130,7 @@ public interface IBaseJDBC {
 	 * @param sql
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return List<T>
 	 */
 	<T> List<T> getInnerEntitys(Object outer, String sql, Class<T> clz, Object... params);
 	
@@ -140,7 +140,7 @@ public interface IBaseJDBC {
 	 * @param columnNameKey 将指定的列名作为key
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Map<String, T>
 	 */
 	<T> Map<String, T> getEntitysMap(String sql, String columnNameKey, Class<T> clz, Object... params);
 	
@@ -151,7 +151,7 @@ public interface IBaseJDBC {
 	 * @param columnNameKey 将指定的列名作为key
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Map<String, T>
 	 */
 	<T> Map<String, T> getInnerEntitysMap(Object outer, String sql, String columnNameKey, Class<T> clz, Object... params);
 
