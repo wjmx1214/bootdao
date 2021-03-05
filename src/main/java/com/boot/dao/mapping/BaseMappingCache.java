@@ -8,13 +8,17 @@ import org.springframework.data.mapping.MappingException;
 
 import com.boot.dao.api.EntityPath;
 import com.boot.dao.config.BaseDAOConfig;
+import com.boot.dao.util.BaseDAOLog;
 import com.boot.dao.util.BaseScanClassUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * DAO映射缓存类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
+@Slf4j
 public abstract class BaseMappingCache {
 	
 	//多条件动态查询映射缓存(使用ConcurrentHashMap防止冲突, 不过就算线程冲突也没啥问题)
@@ -23,7 +27,7 @@ public abstract class BaseMappingCache {
 	/**
 	 * 通过实例获取查询映射
 	 * @param search
-	 * @return
+	 * @return List<BaseSearchMapping>
 	 */
 	public static List<BaseSearchMapping> getSearchMapping(Object search){
 		if(search == null)
@@ -34,7 +38,7 @@ public abstract class BaseMappingCache {
 	/**
 	 * 通过类获取查询映射
 	 * @param clz
-	 * @return
+	 * @return List<BaseSearchMapping>
 	 */
 	public static List<BaseSearchMapping> getSearchMapping(Class<?> clz){
 		if(clz == null)
@@ -63,8 +67,8 @@ public abstract class BaseMappingCache {
 
 	/**
 	 * 通过实例获取映射模板
-	 * @param obj
-	 * @return
+	 * @param t
+	 * @return BaseTableMapping
 	 */
 	public static BaseTableMapping getTableMapping(Object t){
 		if(t == null)
@@ -75,7 +79,7 @@ public abstract class BaseMappingCache {
 	/**
 	 * 通过类获取映射模板
 	 * @param clz
-	 * @return
+	 * @return BaseTableMapping
 	 */
 	public static BaseTableMapping getTableMapping(Class<?> clz){
 		if(clz == null)
@@ -104,7 +108,7 @@ public abstract class BaseMappingCache {
 					tm = createTableMappingCache(clz);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				BaseDAOLog.printException(e);
 			}
 		}
 		return tm;
@@ -119,7 +123,7 @@ public abstract class BaseMappingCache {
 				entityClz = fromConfig(clz); //从统一配置获取对应实体模板
 			return entityClz;
 		}catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 			return null;
 		}
 	}
@@ -182,7 +186,7 @@ public abstract class BaseMappingCache {
 						BaseTableMapping tm = BaseTableMappingUtil.createTableMapping(clz);
 						if(tm.metaType > 0) { //只缓存配置了ID注解的实体模板
 							tableMappingCache.put(clz, tm);
-							//System.out.println("已扫描到实体类：" + className);
+							log.info("已扫描到实体类：" + className);
 						}
 					}
 				} catch (ClassNotFoundException e) {}
