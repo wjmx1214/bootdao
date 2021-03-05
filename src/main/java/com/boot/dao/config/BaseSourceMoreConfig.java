@@ -17,10 +17,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
+import com.boot.dao.util.BaseDAOLog;
+
 /**
  * 多数据源默认配置类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 @Configuration
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
@@ -68,9 +70,9 @@ public class BaseSourceMoreConfig {
     	if(type != null && druidType.equals(type)) {
     		if(buildMethod != null) {
 				try {dataSource = (DataSource)buildMethod.invoke(createMethod.invoke(null)); //阿里巴巴连接池druid创建方式
-				} catch (Exception e) {e.printStackTrace();} 
+				} catch (Exception e) {BaseDAOLog.printException(e);} 
 			}else {
-				new ClassNotFoundException("not found " + druidType).printStackTrace();
+				BaseDAOLog.printException(new ClassNotFoundException("not found " + druidType));
 			}
     		//dataSource = com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder.create().build(); //阿里巴巴连接池druid创建方式
     	}else {
