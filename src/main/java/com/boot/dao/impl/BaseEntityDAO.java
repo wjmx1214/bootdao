@@ -16,13 +16,13 @@ import com.boot.dao.config.BaseDAOConfig;
 import com.boot.dao.mapping.BaseColumnMapping;
 import com.boot.dao.mapping.BaseMappingCache;
 import com.boot.dao.mapping.BaseTableMapping;
+import com.boot.dao.util.BaseDAOLog;
 import com.boot.dao.util.BaseDAOUtil;
 
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @author yyyy-MM-dd update
- * @version 1.0.0
+ * @version 1.0.1
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -36,7 +36,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取boolean型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return boolean
 	 */
 	@Override
 	public boolean getboolean(String sql, Object... params){
@@ -47,7 +47,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取int型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return int
 	 */
 	@Override
 	public int getint(String sql, Object... params){
@@ -58,7 +58,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取Integer型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Integer
 	 */
 	@Override
 	public Integer getInteger(String sql, Object... params){
@@ -69,7 +69,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取long型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return long
 	 */
 	@Override
 	public long getlong(String sql, Object... params){
@@ -80,7 +80,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取Long型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Long
 	 */
 	@Override
 	public Long getLong(String sql, Object... params){
@@ -91,7 +91,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取float型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return float
 	 */
 	@Override
 	public float getfloat(String sql, Object... params) {
@@ -102,7 +102,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取Float型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Float
 	 */
 	@Override
 	public Float getFloat(String sql, Object... params) {
@@ -113,7 +113,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取double型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return double
 	 */
 	@Override
 	public double getdouble(String sql, Object... params){
@@ -124,7 +124,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取Double型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Double
 	 */
 	@Override
 	public Double getDouble(String sql, Object... params){
@@ -135,7 +135,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取String型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return String
 	 */
 	@Override
 	public String getString(String sql, Object... params){
@@ -146,7 +146,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取java.util.Date型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Date
 	 */
 	@Override
 	public Date getDate(String sql, Object... params){
@@ -157,7 +157,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取byte[]型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return byte[]
 	 */
 	@Override
 	public byte[] getbytes(String sql, Object... params){
@@ -168,7 +168,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取BigDecimal型单值
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return BigDecimal
 	 */
 	@Override
 	public BigDecimal getBigDecimal(String sql, Object... params){
@@ -179,7 +179,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取Object型单值(java基础类型)
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return <A>
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -191,7 +191,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取一行数据
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Map<String, Object>
 	 */
 	@Override
 	public Map<String, Object> getRowOne(String sql, Object... params){
@@ -203,7 +203,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 获取一行数据
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return 
+	 * @return Map<String, String>
 	 */
 	@Override
 	public Map<String, String> getRowOneString(String sql, Object... params){
@@ -216,7 +216,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	/**
 	 * 新增或更新(空字符更新)
 	 * @param t
-	 * @return 
+	 * @return <T>
 	 * @throws Exception
 	 */
 	@Override
@@ -227,7 +227,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	/**
 	 * 新增或更新
 	 * @param t
-	 * @return 
+	 * @return <T>
 	 * @throws Exception
 	 */
 	@Override
@@ -356,7 +356,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 根据主键查找对象
 	 * @param pk
 	 * @param clz
-	 * @return 
+	 * @return <T>
 	 */
 	@Override
 	public <T> T getByPK(Serializable pk, Class<T> clz){
@@ -366,7 +366,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 			BaseTableMapping tm = this.getTableMapping(clz);
 			return this.getByColumn(tm.idColumnName, pk, clz, tm);
 		} catch (Exception e) {
-			e.printStackTrace();
+			BaseDAOLog.printException(e);
 		}
 		return null;
 	}
@@ -376,7 +376,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @param columnName
 	 * @param value
 	 * @param clz
-	 * @return 
+	 * @return <T>
 	 */
 	@Override
 	public <T> T getByColumn(String columnName, Object value, Class<T> clz){
@@ -412,7 +412,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * 分页包装(目前仅支持MYSQL)
 	 * @param search
 	 * @param clz
-	 * @return
+	 * @return Page<T>
 	 */
 	public <T> Page<T> page(PageSearch search, Class<T> clz){
 		return page(Map.class.isAssignableFrom(clz), search, clz);
@@ -421,7 +421,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	/**
 	 * 分页包装(目前仅支持MYSQL)
 	 * @param search
-	 * @return Map《String, Object》
+	 * @return Page<Map<String, Object>>
 	 */
 	@SuppressWarnings("rawtypes")
 	public Page<Map> pageMap(PageSearch search){
@@ -463,7 +463,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @param sql
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return
+	 * @return Page<T>
 	 */
 	public <T> Page<T> page(int pageIndex, int pageSize, String sql, Class<T> clz, Object... params){
 		return page(Map.class.isAssignableFrom(clz), pageIndex, pageSize, sql, clz, params);
@@ -475,7 +475,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @param pageSize
 	 * @param sql
 	 * @param params SQL语句中对应的?号参数
-	 * @return Map《String, Object》
+	 * @return Page<Map<String, Object>>
 	 */
 	@SuppressWarnings("rawtypes")
 	public Page<Map> pageMap(int pageIndex, int pageSize, String sql, Object... params){
