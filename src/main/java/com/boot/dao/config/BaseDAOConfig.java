@@ -10,7 +10,7 @@ import com.boot.dao.mapping.BaseMappingCache;
 /**
  * bootdao基础配置
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 @Configuration
 public class BaseDAOConfig {
