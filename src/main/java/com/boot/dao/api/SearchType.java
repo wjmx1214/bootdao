@@ -3,7 +3,7 @@ package com.boot.dao.api;
 /**
  * 多条件动态查询方式枚举(全名版)
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 public enum SearchType {
 	
@@ -59,6 +59,14 @@ public enum SearchType {
 	 */
 	between		(" between ? and ?"),
 	/**
+	 * is empty 是空白
+	 */
+	empty_is	(" = ''"),
+	/**
+	 * is not empty 不是空白
+	 */
+	empty_not	(" <> ''"),
+	/**
 	 * is null 是空值
 	 */
 	null_is		(" is null"),
@@ -75,7 +83,7 @@ public enum SearchType {
 	/**
 	 * 获取枚举实例
 	 * @param code
-	 * @return
+	 * @return SearchType
 	 */
 	public static SearchType getType(String code){
 		for(SearchType type : SearchType.values()){
