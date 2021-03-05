@@ -3,8 +3,7 @@ package com.boot.dao.api;
 /**
  * 使用示例与详细描述请查看readme()
  * @author 2020-12-01 create wang.jia.le	email	wjmx1214@sina.com
- * @author yyyy-MM-dd update
- * @version 1.0.0
+ * @version 1.0.1
  */
 public interface IBaseReadme {
 
@@ -15,23 +14,23 @@ public interface IBaseReadme {
 	
 	优点：函数式封装，适合简单轻量业务以常见函数方式访问数据层
 		 可与其他持久层框架并存，无依赖式兼容JPA或mybatis-plus的实体注解，仅依赖spring-boot基础包
-		 支持扩展更多函数，支持entity、dto、vo无差别调用(配置好映射路径，即可无感知无差别)
+		 支持扩展更多函数，支持entity、dto、vo无感知无差别调用(配置好映射路径即可)
 		 支持注解式多条件动态查询，参考：com.boot.dao.api.SearchMeta 或 com.boot.dao.api.Search
 		 若yml或xml按特定名称配置好多数据源后，无需其他配置即可使用多数据源
 	
 	缺点：未经过大规模性能和稳定性测试，没有数据缓存功能，尚未支持模板SQL(暂可在Service层实现一个接口,用于配置SQL常量)
 	
 	场景：业务简单但SQL语句较多时，可继承BaseTDAO(可指定一个带数据源的DAO来构造, 若未指定则默认为BaseDAO)
-		 业务更简单时，则直接在服务层注入IBaseDAO进行泛型函数式调用, 无需定义任何业务DAO...
-		 业务复杂时可同时兼并使用mybatis或jpa等框架
+		 业务更简单时，则直接在服务层注入IBaseDAO进行泛型函数式调用, 无需定义任何业务DAO
+		 业务复杂或对性能要求较高时可同时兼并使用mybatis或jpa等框架
 		 
-	作者：王家乐		若发现BUG或疑惑请至信	wjmx1214@sina.com
+	作者：wang.jia.le		若发现BUG或疑惑请至信	wjmx1214@sina.com
 
 	pom：
 	 <dependency>
 	    <groupId>com.bootdao</groupId>
 	    <artifactId>bootdao-spring-boot-starter</artifactId>
-	    <version>1.0.0</version>
+	    <version>1.0.1</version>
 	</dependency>
 
 
@@ -55,20 +54,20 @@ public interface IBaseReadme {
 
 
 	若yml未配置或类名无法对应，但需要entity、dto、vo无差别调用时，可在Dto类中通过@EntityPath注解配置
-	@EntityPath("com.xxx.xxx.entity.Student")
+	+@EntityPath("com.xxx.xxx.entity.Student")
 	public class StuDto {
 	    private Long stuId;
 	    //...
 	}
 
 	IBaseDAO使用示例：
-	@Service
-	@Transactional(rollbackFor=Exception.class)
+	+@Service
+	+@Transactional(rollbackFor=Exception.class)
 	public class StuService implements IStuService{
-	    @Autowired
+	    +@Autowired
 	    private IBaseDAO baseDAO;
 	    
-	    @Override
+	    +@Override
 	    public void list() throws Exception{
 	        String sql = "SELECT * FROM stu WHERE age > ?";
 	        List<StuDto> list = baseDAO.getEntitys(sql, StuDto.class, 15);
@@ -79,13 +78,13 @@ public interface IBaseReadme {
 	}
 	
 	分离SQL示例：
-	@Service
-	@Transactional(rollbackFor=Exception.class)
+	+@Service
+	+@Transactional(rollbackFor=Exception.class)
 	public class StuService implements IStuService, StuServiceSQL{
-	    @Autowired
+	    +@Autowired
 	    private IBaseDAO baseDAO;
 	    
-	    @Override
+	    +@Override
 	    public void stuList() throws Exception{
 	        List<StuDto> list = baseDAO.getEntitys(stuList_sql1, StuDto.class, 15);
 	        for(StuDto stu : list) {
@@ -94,7 +93,7 @@ public interface IBaseReadme {
 	        //... stuList_sql2
 	    }
 	    
-	    @Override
+	    +@Override
 	    public void getStuByName(String name) throws Exception{
 	    	//...getStuByName_sql
 	    }
@@ -109,9 +108,9 @@ public interface IBaseReadme {
 	多条件动态查询示例：
 	public class StuSearch extends PageSearch{ //BaseSearch
 		private Long id;
-		@Search(column="stu_name", type=SType.like_r)
+		+@Search(column="stu_name", type=SType.like_r)
 		private String name;
-		@Search(column="stu_name", type=SType.like_a, index=2, label="s")
+		+@Search(column="stu_name", type=SType.like_a, index=2, label="s")
 		private String name2;
 	}
 
