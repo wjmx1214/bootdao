@@ -8,8 +8,7 @@ import java.util.List;
  * 多条件动态查询(分页包装类)
  * @param <T>
  * @author 2020-12-01 create wang.jia.le
- * @author yyyy-MM-dd update
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class Page<T> implements Serializable{
 	
