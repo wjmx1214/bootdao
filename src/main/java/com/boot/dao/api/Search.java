@@ -14,10 +14,10 @@ import java.lang.annotation.Target;
 
 		private Long id;
 
-		@Search(column="stu_name", type=SType.like_r)
+		+@Search(column="stu_name", type=SType.like_r)
 		private String name;
 
-		@Search(column="stu_name", type=SType.like_a, index=2, label="s")
+		+@Search(column="stu_name", type=SType.like_a, index=2, label="s")
 		private String name2;
 
 	}
@@ -44,7 +44,7 @@ import java.lang.annotation.Target;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.0.0
+	@version 1.0.1
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target(ElementType.FIELD) 						// 定义注解的作用目标(类，常量，字段，方法等)
@@ -53,33 +53,33 @@ public @interface Search {
 	
     /**
      * 查询方式(默认eq)
-     * @return
+     * @return SType
      */
 	SType type() default SType.eq;
 	
 	/**
 	 * 表别名
-	 * @return
+	 * @return String
 	 */
 	String label() default "";
 	
 	/**
 	 * 列名或列别名
-	 * @return
+	 * @return String
 	 */
 	String column() default "";
 	
 	/**
 	 * 是否开启驼峰转换, 可省去配置列名(true=开启)
-	 * @return
+	 * @return boolean
 	 */
 	boolean hump() default true;
 
 	/**
 	 * 条件索引(多表或子查询时, 若出现多处where或having, 则利用此索引进行区分, 按阅读顺序)<br>
 	 * 默认=1, 即默认只有一处where
-	 * @return
+	 * @return int
 	 */
 	int index() default 1;
 
-}  
+}
