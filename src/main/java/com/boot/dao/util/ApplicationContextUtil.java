@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * 获取spring上下文
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.0
+ * @version 1.0.1
  */
 @Configuration
 public class ApplicationContextUtil implements ApplicationContextAware{
@@ -22,27 +22,29 @@ public class ApplicationContextUtil implements ApplicationContextAware{
 	
     /**
      * 获取applicationContext
-     * @return
+     * @return ApplicationContext
      */
     public static ApplicationContext getApplicationContext() {
         return applicationContext;
     }
 
-    /**
-     * 通过name获取Bean
-     * @param name
-     * @return
-     */
+	/**
+	 * 通过name获取Bean
+	 * @param <B>
+	 * @param name
+	 * @return <B>
+	 */
     @SuppressWarnings("unchecked")
 	public static <B> B getBean(String name) {
         return (B) applicationContext.getBean(name);
     }
 
-    /**
-     * 通过class获取Bean
-     * @param clz
-     * @return
-     */
+	/**
+	 * 通过class获取Bean
+	 * @param <B>
+	 * @param clz
+	 * @return <B>
+	 */
     @SuppressWarnings("unchecked")
 	public static <B> B getBean(Class<?> clz) {
         return (B) applicationContext.getBean(clz);
