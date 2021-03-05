@@ -13,8 +13,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 表映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @author yyyy-MM-dd update
- * @version 1.0.0
+ * @version 1.0.1
  */
 @SuppressWarnings("unchecked")
 abstract class BaseTableMappingUtil {
