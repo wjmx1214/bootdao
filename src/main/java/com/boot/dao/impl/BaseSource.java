@@ -16,8 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 数据源类
  * @author 2020-12-01 create wang.jia.le
- * @author yyyy-MM-dd update
- * @version 1.0.0
+ * @version 1.0.1
  */
 @Slf4j
 @Import({BaseDAOConfig.class, ApplicationContextUtil.class, BaseSourceMoreConfig.class}) //装配基础配置类,spring上下文工具类,多数据源配置类
