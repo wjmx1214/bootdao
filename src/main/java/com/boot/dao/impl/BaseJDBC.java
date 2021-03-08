@@ -27,7 +27,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.2
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
@@ -469,28 +469,28 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	/**
 	 * 获取entity集合《key, Entity》形式(导出数据请使用Map或数组, 否则可能影响性能)
 	 * @param sql
-	 * @param columnNameKey 将指定的列名作为key
+	 * @param columnName 将指定的列作为key
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
 	 * @return Map<String, T>
 	 */
 	@Override
-	public <T> Map<String, T> getEntitysMap(String sql, String columnNameKey, Class<T> clz, Object... params){
-		return this.getInnerEntitysMap(null, sql, columnNameKey, clz, params);
+	public <T> Map<String, T> getEntitysMap(String sql, String columnName, Class<T> clz, Object... params){
+		return this.getInnerEntitysMap(null, sql, columnName, clz, params);
 	}
 	
 	/**
 	 * 获取内部类entity集合《key, Entity》形式(导出数据请使用Map或数组, 否则可能影响性能)
 	 * @param outer	外部类实例
 	 * @param sql
-	 * @param columnNameKey 将指定的列名作为key
+	 * @param columnName 将指定的列作为key
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
 	 * @return Map<String, T>
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> Map<String, T> getInnerEntitysMap(Object outer, String sql, String columnNameKey, Class<T> clz, Object... params){
+	public <T> Map<String, T> getInnerEntitysMap(Object outer, String sql, String columnName, Class<T> clz, Object... params){
 		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
 		Map<String, T> map = new LinkedHashMap<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
@@ -511,7 +511,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatDate);
 						if(value != null) {
 							cm.field.set(t, value); //为字段赋值
-							if(columnLabel.equals(columnNameKey)) {
+							if(columnLabel.equals(columnName)) {
 								key = value.toString();
 							}
 						}
