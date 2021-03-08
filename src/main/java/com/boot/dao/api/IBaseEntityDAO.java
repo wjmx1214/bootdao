@@ -3,12 +3,13 @@ package com.boot.dao.api;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
  * 实体封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.2
  */
 public interface IBaseEntityDAO extends IBaseJDBC{
 
@@ -139,14 +140,6 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @return Map<String, String>
 	 */
 	Map<String, String> getRowOneString(String sql, Object... params);
-
-	/**
-	 * 新增或更新(空字符更新)
-	 * @param t
-	 * @return <T>
-	 * @throws Exception
-	 */
-	<T> T save_empty(T t) throws Exception;
 	
 	/**
 	 * 新增或更新
@@ -155,6 +148,14 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @throws Exception
 	 */
 	<T> T save(T t) throws Exception;
+	
+	/**
+	 * 新增或更新(空字符更新)
+	 * @param t
+	 * @return <T>
+	 * @throws Exception
+	 */
+	<T> T save_empty(T t) throws Exception;
 	
 	/**
 	 * 删除
@@ -180,13 +181,64 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> T getByPK(Serializable pk, Class<T> clz);
 	
 	/**
+	 * 根据唯一属性查找对象(需要有对应的列名映射)
+	 * @param fieldName
+	 * @param value
+	 * @param clz
+	 * @return <T>
+	 */
+	<T> T getByUniqueField(String fieldName, Object value, Class<T> clz);
+	
+	/**
 	 * 根据唯一列查找对象
 	 * @param columnName
 	 * @param value
 	 * @param clz
 	 * @return <T>
 	 */
-	<T> T getByColumn(String columnName, Object value, Class<T> clz);
+	<T> T getByUniqueColumn(String columnName, Object value, Class<T> clz);
+	
+	/**
+	 * 根据单个条件查找对象集合(属性名, 需要有对应的列名映射)
+	 * @param fieldName
+	 * @param value
+	 * @param searchType
+	 * @param clz
+	 * @return List<T>
+	 */
+	<T> List<T> getByWhereField(String fieldName, Object value, SearchType searchType, Class<T> clz);
+	
+	/**
+	 * 根据单个条件查找对象集合(列名)
+	 * @param columnName
+	 * @param value
+	 * @param searchType
+	 * @param clz
+	 * @return List<T>
+	 */
+	<T> List<T> getByWhereColumn(String columnName, Object value, SearchType searchType, Class<T> clz);
+	
+	/**
+	 * 根据主键更新单值(属性名)
+	 * @param pk
+	 * @param clz
+	 * @param fieldName
+	 * @param value
+	 * @return int
+	 * @throws Exception
+	 */
+	<T> int updateFieldByPK(Serializable pk, Class<T> clz, String fieldName, Object value) throws Exception;
+	
+	/**
+	 * 根据主键更新单值(列名)
+	 * @param pk
+	 * @param clz
+	 * @param columnName
+	 * @param value
+	 * @return int
+	 * @throws Exception
+	 */
+	<T> int updateColumnByPK(Serializable pk, Class<T> clz, String columnName, Object value) throws Exception;
 	
 	/**
 	 * 分页包装(目前仅支持MYSQL)
