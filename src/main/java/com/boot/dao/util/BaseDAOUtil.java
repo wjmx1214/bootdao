@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * DAO工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.2
  */
 public abstract class BaseDAOUtil {
 
@@ -179,8 +179,6 @@ public abstract class BaseDAOUtil {
 	 * @return Method
 	 */
 	public Method findGetMethod(Class<?> clz, String fieldName) {
-		if(fieldName == null || fieldName.length() == 0)
-			return null;
 	    String str1 = fieldName.substring(0, 1);
 	    String str2 = fieldName.substring(1, fieldName.length());
 	    String methodName = "get" + str1.toUpperCase() + str2;
@@ -200,7 +198,7 @@ public abstract class BaseDAOUtil {
 	 * @return Method
 	 */
 	public Method findSetMethod(Class<?> clz, String fieldName, Class<?> parameterTypes) {
-		if(fieldName == null || fieldName.length() == 0 || parameterTypes == null)
+		if(parameterTypes == null)
 			return null;
 	    String str1 = fieldName.substring(0, 1);
 	    String str2 = fieldName.substring(1, fieldName.length());
