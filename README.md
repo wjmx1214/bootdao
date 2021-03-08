@@ -27,7 +27,7 @@
 	 <dependency>
         <groupId>com.bootdao</groupId>
         <artifactId>bootdao-spring-boot-starter</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
     </dependency>
 
  yml配置(选配)：
@@ -78,6 +78,7 @@
 		@Search(column="stu_name", type=SType.like_a, index=2, label="s")
 		private String name2;
 	}
+
  调用示例：
 
 	public Page<StuDto> pageStu(StuSearch search){
