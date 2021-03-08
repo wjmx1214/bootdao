@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import com.boot.dao.api.IBaseEntityDAO;
 import com.boot.dao.api.Page;
 import com.boot.dao.api.PageSearch;
+import com.boot.dao.api.SearchType;
 import com.boot.dao.util.ApplicationContextUtil;
 import com.boot.dao.util.BaseDAOLog;
 
@@ -19,7 +20,7 @@ import com.boot.dao.util.BaseDAOLog;
  * 可指定一个带数据源的DAO来构造, 若未指定则默认为BaseDAO
  * @param <T>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.2
  */
 @Import(BaseDAO.class)
 public abstract class BaseTDAO<T>{
@@ -54,8 +55,7 @@ public abstract class BaseTDAO<T>{
 		if(this.DAO == null) {
 			if(this.daoClass != null) {
 				this.DAO = ApplicationContextUtil.getBean(this.daoClass);
-			}
-			if(this.daoName != null) {
+			}else if(this.daoName != null) {
 				this.DAO = ApplicationContextUtil.getBean(this.daoName);
 			}
 			if(this.DAO == null) {
@@ -81,17 +81,7 @@ public abstract class BaseTDAO<T>{
 		}
 		return classT;
 	}
-	
-	/**
-	 * 保存对象(新增或更新)(空字符更新)
-	 * @param t
-	 * @return <T>
-	 * @throws Exception
-	 */
-	public T save_empty(T t) throws Exception{
-		return DAO().save_empty(t);
-	}
-	
+
 	/**
 	 * 保存对象(新增或更新)
 	 * @param t
@@ -100,6 +90,16 @@ public abstract class BaseTDAO<T>{
 	 */
 	public T save(T t) throws Exception{
 		return DAO().save(t);
+	}
+
+	/**
+	 * 保存对象(新增或更新)(空字符更新)
+	 * @param t
+	 * @return <T>
+	 * @throws Exception
+	 */
+	public T save_empty(T t) throws Exception{
+		return DAO().save_empty(t);
 	}
 	
 	/**
@@ -115,12 +115,12 @@ public abstract class BaseTDAO<T>{
 	/**
 	 * 获取entity集合《key, Entity》形式(导出数据请使用Map或数组, 否则可能影响性能)
 	 * @param sql
-	 * @param columnNameKey 将指定的列名作为key
+	 * @param columnName 将指定的列作为key
 	 * @param params SQL语句中对应的?号参数
 	 * @return Map<String, T>
 	 */
-	public Map<String, T> listMap(String sql, String columnNameKey, Object... params){
-		return DAO().getEntitysMap(sql, columnNameKey, classT, params);
+	public Map<String, T> listMap(String sql, String columnName, Object... params){
+		return DAO().getEntitysMap(sql, columnName, classT, params);
 	}
 	
 	/**
@@ -161,13 +161,69 @@ public abstract class BaseTDAO<T>{
 	}
 	
 	/**
+	 * 根据唯一属性查找对象(需要有对应的列名映射)
+	 * @param fieldName
+	 * @param value
+	 * @return <T>
+	 */
+	public T getByUniqueField(String fieldName, Object value){
+		return DAO().getByUniqueField(fieldName, value, classT);
+	}
+	
+	/**
 	 * 根据唯一列查找对象
 	 * @param columnName
 	 * @param value
 	 * @return <T>
 	 */
-	public T getByColumn(String columnName, Object value){
-		return DAO().getByColumn(columnName, value, classT);
+	public T getByUniqueColumn(String columnName, Object value) {
+		return DAO().getByUniqueColumn(columnName, value, classT);
+	}
+	
+	/**
+	 * 根据单个条件查找对象集合(属性名, 需要有对应的列名映射)
+	 * @param fieldName
+	 * @param value
+	 * @param searchType
+	 * @return List<T>
+	 */
+	public List<T> getByWhereField(String fieldName, Object value, SearchType searchType){
+		return DAO().getByWhereField(fieldName, value, searchType, classT);
+	}
+	
+	/**
+	 * 根据单个条件查找对象集合(列名)
+	 * @param columnName
+	 * @param value
+	 * @param searchType
+	 * @return List<T>
+	 */
+	public List<T> getByWhereColumn(String columnName, Object value, SearchType searchType){
+		return DAO().getByWhereColumn(columnName, value, searchType, classT);
+	}
+	
+	/**
+	 * 根据主键更新单值(属性名)
+	 * @param pk
+	 * @param fieldName
+	 * @param value
+	 * @return int
+	 * @throws Exception
+	 */
+	public int updateFieldByPK(Serializable pk, String fieldName, Object value) throws Exception{
+		return DAO().updateFieldByPK(pk, classT, fieldName, value);
+	}
+	
+	/**
+	 * 根据主键更新单值(列名)
+	 * @param pk
+	 * @param columnName
+	 * @param value
+	 * @return int
+	 * @throws Exception
+	 */
+	public int updateColumnByPK(Serializable pk, String columnName, Object value) throws Exception{
+		return DAO().updateColumnByPK(pk, classT, columnName, value);
 	}
 
 	/**
