@@ -12,6 +12,7 @@ import org.springframework.data.mapping.MappingException;
 import com.boot.dao.api.IBaseEntityDAO;
 import com.boot.dao.api.Page;
 import com.boot.dao.api.PageSearch;
+import com.boot.dao.api.SearchType;
 import com.boot.dao.config.BaseDAOConfig;
 import com.boot.dao.mapping.BaseColumnMapping;
 import com.boot.dao.mapping.BaseMappingCache;
@@ -22,7 +23,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.2
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -214,17 +215,6 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//---------------------------------------------------------- 对象增删改查 ------------------------------------------------------
 
 	/**
-	 * 新增或更新(空字符更新)
-	 * @param t
-	 * @return <T>
-	 * @throws Exception
-	 */
-	@Override
-	public <T> T save_empty(T t) throws Exception{
-		return this.save(t, true);
-	}
-	
-	/**
 	 * 新增或更新
 	 * @param t
 	 * @return <T>
@@ -235,12 +225,23 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		return this.save(t, false);
 	}
 
+	/**
+	 * 新增或更新(空字符更新)
+	 * @param t
+	 * @return <T>
+	 * @throws Exception
+	 */
+	@Override
+	public <T> T save_empty(T t) throws Exception{
+		return this.save(t, true);
+	}
+
 	//新增或更新
 	@SuppressWarnings("unchecked")
 	private <T> T save(T t, boolean empty) throws Exception{
 		BaseTableMapping tm = this.getTableMapping(t);
 		Serializable id = tm.idFieldGet(t);
-		T old = (id == null) ? null : (T)this.getByColumn(tm.idColumnName, id, t.getClass(), tm);
+		T old = (id == null) ? null : (T)this.getByUniqueColumn(tm.idColumnName, id, t.getClass(), tm.tableName);
 		List<Object> paramsList = new ArrayList<>();
 		if(old == null){ //新增
 			String sql = this.appendCreateSQL(t, tm, paramsList, empty, id);
@@ -346,8 +347,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
 	//根据主键删除
 	private <T> void delete(Serializable pk, Class<T> clz, BaseTableMapping tm) throws Exception{
-		if(pk == null)
-			throw new MappingException("id is null, please check! className: " + clz.getName());
+		checkPK(pk, clz);
 		String sql = new StringBuffer("DELETE FROM ").append(tm.tableName).append(" WHERE ").append(tm.idColumnName).append("=?").toString();
 		super.updateSQL(sql, pk);
 	}
@@ -360,15 +360,27 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 */
 	@Override
 	public <T> T getByPK(Serializable pk, Class<T> clz){
-		if(pk == null || isBlank(pk.toString()) || "0".equals(pk.toString()))
-			return null;
+		checkPK(pk, clz);
 		try {
 			BaseTableMapping tm = this.getTableMapping(clz);
-			return this.getByColumn(tm.idColumnName, pk, clz, tm);
+			return this.getByUniqueColumn(tm.idColumnName, pk, clz, tm.tableName);
 		} catch (Exception e) {
 			BaseDAOLog.printException(e);
 		}
 		return null;
+	}
+	
+	/**
+	 * 根据唯一属性查找对象(需要有对应的列名映射)
+	 * @param fieldName
+	 * @param value
+	 * @param clz
+	 * @return <T>
+	 */
+	@Override
+	public <T> T getByUniqueField(String fieldName, Object value, Class<T> clz){
+		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
+		return this.getByUniqueColumn(tm.fieldMappings.get(fieldName).columnName, value, clz, tm.tableName);
 	}
 	
 	/**
@@ -379,16 +391,21 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @return <T>
 	 */
 	@Override
-	public <T> T getByColumn(String columnName, Object value, Class<T> clz){
-		if(isBlank(columnName) || isBlankObj(value))
-			return null;
-		return this.getByColumn(columnName, value, clz, BaseMappingCache.getTableMapping(clz));
+	public <T> T getByUniqueColumn(String columnName, Object value, Class<T> clz){
+		return this.getByUniqueColumn(columnName, value, clz, BaseMappingCache.getTableMapping(clz).tableName);
 	}
 	
 	//根据唯一列查找对象
-	private <T> T getByColumn(String columnName, Object value, Class<T> clz, BaseTableMapping tm){
-		String sql = new StringBuffer("SELECT * FROM ").append(tm.tableName).append(" WHERE ").append(columnName).append("=?").toString();
+	private <T> T getByUniqueColumn(String columnName, Object value, Class<T> clz, String tableName){
+		String sql = new StringBuffer("SELECT * FROM ").append(tableName).append(" WHERE ").append(columnName).append("=?").toString();
 		return super.getEntity(sql, clz, value);
+	}
+	
+	//检查主键是否有效
+	private <T> void checkPK(Serializable pk, Class<T> clz) {
+		if(pk == null || isBlank(pk.toString()) || "0".equals(pk.toString())) {
+			throw new MappingException("id is null or empty or equals 0, please check! className: " + clz.getName());
+		}
 	}
 	
 	//根据对象查询映射(未找到主键映射时抛出未映射异常)
@@ -404,6 +421,105 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		if(tm.metaType == 0 || tm.idField == null)
 			throw new MappingException("not found id mapping, please check! className: " + clz.getName());
 		return tm;
+	}
+	
+	/**
+	 * 根据单个条件查找对象集合(属性名, 需要有对应的列名映射)
+	 * @param fieldName
+	 * @param value
+	 * @param searchType
+	 * @param clz
+	 * @return List<T>
+	 */
+	@Override
+	public <T> List<T> getByWhereField(String fieldName, Object value, SearchType searchType, Class<T> clz){
+		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
+		return this.getByWhereColumn(tm.fieldMappings.get(fieldName).columnName, value, searchType, clz);
+	}
+	
+	/**
+	 * 根据单个条件查找对象集合(列名)
+	 * @param columnName
+	 * @param value
+	 * @param searchType
+	 * @param clz
+	 * @return List<T>
+	 */
+	@Override
+	public <T> List<T> getByWhereColumn(String columnName, Object value, SearchType searchType, Class<T> clz){
+		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
+		StringBuffer sql = new StringBuffer("SELECT * FROM ").append(tm.tableName).append(" WHERE ").append(columnName).append(searchType.code);
+		List<Object> params = this.convertParam(value, searchType, sql);
+		if(params == null) {
+			return null;
+		}
+		return super.getEntitys(sql.toString(), clz, params.toArray());
+	}
+	
+	//转换参数
+	private List<Object> convertParam(Object value, SearchType type, StringBuffer sql) {
+		List<Object> params = new ArrayList<>();
+		if(type == SearchType.null_is || type == SearchType.null_not || type == SearchType.empty_is || type == SearchType.empty_not) {
+			return params;
+		}
+		if(isBlankObj(value)) {
+			return null;
+		}
+		if(type == SearchType.in || type == SearchType.in_not) {
+			StringBuffer question = new StringBuffer("(");
+			String[] array = value.toString().split(",");
+			for (Object o : array) {
+				question.append("?,");
+				params.add(o);
+			}
+			question.deleteCharAt(question.length()-1).append(')');
+			sql.append(question);
+		}else {
+			if(type == SearchType.like_left) {
+				params.add("%" + value.toString());
+			}else if(type == SearchType.like_right) {
+				params.add(value.toString() + "%");
+			}else if(type == SearchType.like_all) {
+				params.add("%" + value.toString() + "%");
+			}else if(type == SearchType.between) {
+				String[] array = value.toString().split(",");
+				params.add(array[0]);
+				params.add(array[1]);
+			}else {
+				params.add(value);
+			}
+		}
+		return params;
+	}
+	
+	/**
+	 * 根据主键更新单值(属性名)
+	 * @param pk
+	 * @param clz
+	 * @param fieldName
+	 * @param value
+	 * @return int
+	 * @throws Exception
+	 */
+	public <T> int updateFieldByPK(Serializable pk, Class<T> clz, String fieldName, Object value) throws Exception{
+		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
+		return this.updateColumnByPK(pk, clz, tm.fieldMappings.get(fieldName).columnName, value);
+	}
+	
+	/**
+	 * 根据主键更新单值(列名)
+	 * @param pk
+	 * @param clz
+	 * @param columnName
+	 * @param value
+	 * @return int
+	 * @throws Exception
+	 */
+	public <T> int updateColumnByPK(Serializable pk, Class<T> clz, String columnName, Object value) throws Exception{
+		checkPK(pk, clz);
+		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
+		String sql = new StringBuffer("UPDATE ").append(tm.tableName).append(" SET ").append(columnName).append("=? WHERE ").append(tm.idColumnName).append("=?").toString();
+		return super.updateSQL(sql, value, pk);
 	}
 	
 	//-------------------------------------------------------- 分页查询 -------------------------------------------------------
