@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.0.1
+	@version 1.0.3
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target({ElementType.TYPE}) 					// 定义注解的作用目标(类，常量，字段，方法等)
@@ -26,7 +26,9 @@ import java.lang.annotation.Target;
 public @interface EntityPath {  
 
 	/**
-	 * 实体类全路径(com.xxx.xxx.entity.Student)
+	 * 实体类全路径(com.xxx.xxx.entity.Student)<br>
+	 * 注意：若未配置此注解，有可能会根据类名自动匹配上实体类，<br>
+	 * 若不想匹配，则配置为：@EntityPath("no entity")
 	 * @return String
 	 */
 	 String value() default "";
