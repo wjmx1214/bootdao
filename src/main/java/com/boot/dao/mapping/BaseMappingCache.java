@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * DAO映射缓存类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.3
  */
 @Slf4j
 public abstract class BaseMappingCache {
@@ -133,6 +133,9 @@ public abstract class BaseMappingCache {
 		if(clz.isAnnotationPresent(EntityPath.class)) {
 			EntityPath entityPath = clz.getAnnotation(EntityPath.class);
 			if(entityPath.value().length() > 0) {
+				if(entityPath.value().toLowerCase().equals("no entity")) {
+					return clz; //关闭自动匹配
+				}
 				try {
 					return Class.forName(entityPath.value());
 				} catch (ClassNotFoundException e) {
@@ -157,8 +160,9 @@ public abstract class BaseMappingCache {
 				return Class.forName(entityPath + "." + entityName);
 			} catch (ClassNotFoundException e) {}
 		}
-		throw new MappingException("未找到类[" + clz.getName() + "]对应的实体类, 请检查配置路径... "
-				+ "not found class [" + clz.getName() + "] mapping entity class, please check config path...");
+		return clz; //当未找到对应实体类时，返回该类型自身，一般情况是未做映射配置，只是用作查询接收模板
+		//throw new MappingException("未找到类[" + clz.getName() + "]对应的实体类, 请检查配置路径... "
+				//+ "not found class [" + clz.getName() + "] mapping entity class, please check config path...");
 
 	}
 	
