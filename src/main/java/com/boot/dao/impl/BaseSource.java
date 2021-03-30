@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 数据源类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.3
  */
 @Slf4j
 @Import({BaseDAOConfig.class, ApplicationContextUtil.class, BaseSourceMoreConfig.class}) //装配基础配置类,spring上下文工具类,多数据源配置类
@@ -49,7 +49,8 @@ abstract class BaseSource{
 	}
 	
 	/**
-	 * 获取当前DAO所使用的Connection连接
+	 * 获取当前线程的DAO所使用的Connection连接<br>
+	 * 注意：非请求线程且不是访问@Service中的函数获取时，会导致连接无法释放
 	 * @return Connection
 	 * @throws SQLException
 	 */
