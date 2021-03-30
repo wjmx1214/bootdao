@@ -23,7 +23,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.2
+ * @version 1.0.3
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -502,7 +502,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @throws Exception
 	 */
 	public <T> int updateFieldByPK(Serializable pk, Class<T> clz, String fieldName, Object value) throws Exception{
-		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
+		BaseTableMapping tm = this.getTableMapping(clz);
 		return this.updateColumnByPK(pk, clz, tm.fieldMappings.get(fieldName).columnName, value);
 	}
 	
@@ -517,7 +517,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 */
 	public <T> int updateColumnByPK(Serializable pk, Class<T> clz, String columnName, Object value) throws Exception{
 		checkPK(pk, clz);
-		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
+		BaseTableMapping tm = this.getTableMapping(clz);
 		String sql = new StringBuffer("UPDATE ").append(tm.tableName).append(" SET ").append(columnName).append("=? WHERE ").append(tm.idColumnName).append("=?").toString();
 		return super.updateSQL(sql, value, pk);
 	}
