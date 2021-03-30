@@ -13,7 +13,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 表映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.3
  */
 @SuppressWarnings("unchecked")
 abstract class BaseTableMappingUtil {
@@ -84,7 +84,6 @@ abstract class BaseTableMappingUtil {
 			tm.tableName = !tm.isHump ? clz.getSimpleName() : BaseDAOUtil.humpToUnderline(clz.getSimpleName());
 		}
 
-		tm.tableName = tm.tableName.toLowerCase();
 		createColumnMapping(clz, tm); //创建列映射
 		return tm;
 	}
