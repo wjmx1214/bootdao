@@ -27,7 +27,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.2
+ * @version 1.0.3
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
@@ -382,10 +382,10 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getInnerEntity(Object outer, String sql, Class<T> clz, Object... params){
-		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
 		T t = null;
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
+			BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
 			jq.query(super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				if(outer == null) {
@@ -435,11 +435,10 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> List<T> getInnerEntitys(Object outer, String sql, Class<T> clz, Object... params){
-		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
 		List<T> list = new ArrayList<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(super.getConnection(), sql, params);
+			jq.query(BaseMappingCache.getTableMapping(clz), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				T t = null;
 				if(outer == null) {
@@ -448,7 +447,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 					t = (T)clz.getDeclaredConstructors()[0].newInstance(outer);//动态生成泛型的实例(内部类，通过外部类实例创建)
 				}
 				for(int i=0; i<jq.columnCount; i++) {
-					BaseColumnMapping cm = tm.columnMappings.get(jq.rs.getMetaData().getColumnLabel(i+1).toLowerCase());
+					BaseColumnMapping cm = jq.resultColumns.get(i);
 					if(cm != null) {
 						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatDate);
 						if(value != null) {
@@ -491,11 +490,10 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Map<String, T> getInnerEntitysMap(Object outer, String sql, String columnName, Class<T> clz, Object... params){
-		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
 		Map<String, T> map = new LinkedHashMap<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(super.getConnection(), sql, params);
+			jq.query(BaseMappingCache.getTableMapping(clz), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				T t = null;
 				if(outer == null) {
@@ -505,13 +503,12 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				}
 				String key = null;
 				for(int i=0; i<jq.columnCount; i++) {
-					String columnLabel = jq.rs.getMetaData().getColumnLabel(i+1).toLowerCase();
-					BaseColumnMapping cm = tm.columnMappings.get(columnLabel);
+					BaseColumnMapping cm = jq.resultColumns.get(i);
 					if(cm != null) {
 						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatDate);
 						if(value != null) {
 							cm.field.set(t, value); //为字段赋值
-							if(columnLabel.equals(columnName)) {
+							if(cm.columnName.equals(columnName)) {
 								key = value.toString();
 							}
 						}
