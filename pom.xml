@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bootdao</groupId>
     <artifactId>bootdao-spring-boot-starter</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <name>bootdao</name>
     <description>bootdao for Spring Boot</description>
 
