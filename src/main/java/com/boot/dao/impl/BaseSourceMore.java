@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Import;
 /**
  * 继承此类实现(自定义名称)多数据源(实现方式请参考构造方法注释)
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.4
  */
 @Import(BaseDAO.class)
 public abstract class BaseSourceMore extends BaseEntityDAO{
@@ -17,7 +17,7 @@ public abstract class BaseSourceMore extends BaseEntityDAO{
 			+@Import(YourSourceConfig.class)
 			public class YourDAO extends BaseSourceMore{
 				public YourDAO() {
-					super("数据源名称");
+					super("数据源名称", "事务管理器名称");
 				}
 			}
 		</pre>
@@ -26,9 +26,10 @@ public abstract class BaseSourceMore extends BaseEntityDAO{
 		+@Configuration
 		public class YourSourceConfig{
 			+@Bean
-			+@ConfigurationProperties(prefix="spring.datasource.数据源名称")
-			+@Value("${spring.datasource.数据源名称.type:#{null}}")
+			+@ConfigurationProperties(prefix="spring.数据源名称[.druid]")
+			+@Value("${spring.数据源名称.type:#{null}}")
 			public DataSource 数据源名称(String type) {
+				//若未使用druid连接池，请去掉此if语句
 				if(type != null && "com.alibaba.druid.pool.DruidDataSource".equals(type)) {
 					return com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder.create().build(); //阿里巴巴连接池druid创建方式
 				}
@@ -37,8 +38,8 @@ public abstract class BaseSourceMore extends BaseEntityDAO{
 			
 			+@Bean //此名称即为@Transactional(value="事务管理器名称", rollbackFor=Exception.class)
 			+@ConditionalOnBean(name="数据源名称")
-		    public DataSourceTransactionManager 事务管理器名称(@Qualifier("数据源名称") DataSource datasource) {
-		    	return new org.springframework.jdbc.datasource.DataSourceTransactionManager(datasource);
+		    public DataSourceTransactionManager 事务管理器名称(@Qualifier("数据源名称") DataSource dataSource) {
+		    	return new org.springframework.jdbc.datasource.DataSourceTransactionManager(dataSource);
 		    }
 		    
 		    //@Bean
@@ -46,8 +47,8 @@ public abstract class BaseSourceMore extends BaseEntityDAO{
 		 }
 	   	 </pre>
 	 */
-	public BaseSourceMore(String dataSourceName) {
-		super(dataSourceName);
+	public BaseSourceMore(String dataSourceName, String transactionManagerName) {
+		super(dataSourceName, transactionManagerName);
 	}
 
 }
