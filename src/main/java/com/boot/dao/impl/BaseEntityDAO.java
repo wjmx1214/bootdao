@@ -23,12 +23,12 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.3
+ * @version 1.0.4
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
-	public BaseEntityDAO(String dataSourceName) {
-		super(dataSourceName);
+	public BaseEntityDAO(String dataSourceName, String transactionManagerName) {
+		super(dataSourceName, transactionManagerName);
 	}
 
 	//----------------------------------------------------------- 基础API -------------------------------------------------------
@@ -241,7 +241,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	private <T> T save(T t, boolean empty) throws Exception{
 		BaseTableMapping tm = this.getTableMapping(t);
 		Serializable id = tm.idFieldGet(t);
-		T old = (id == null) ? null : (T)this.getByUniqueColumn(tm.idColumnName, id, t.getClass(), tm.tableName);
+		T old = (id == null) ? null : (T)this.findByUniqueColumn(tm.idColumnName, id, t.getClass(), tm.tableName);
 		List<Object> paramsList = new ArrayList<>();
 		if(old == null){ //新增
 			String sql = this.appendCreateSQL(t, tm, paramsList, empty, id);
@@ -359,11 +359,11 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @return <T>
 	 */
 	@Override
-	public <T> T getByPK(Serializable pk, Class<T> clz){
+	public <T> T findByPK(Serializable pk, Class<T> clz){
 		checkPK(pk, clz);
 		try {
 			BaseTableMapping tm = this.getTableMapping(clz);
-			return this.getByUniqueColumn(tm.idColumnName, pk, clz, tm.tableName);
+			return this.findByUniqueColumn(tm.idColumnName, pk, clz, tm.tableName);
 		} catch (Exception e) {
 			BaseDAOLog.printException(e);
 		}
@@ -378,9 +378,9 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @return <T>
 	 */
 	@Override
-	public <T> T getByUniqueField(String fieldName, Object value, Class<T> clz){
+	public <T> T findByUniqueField(String fieldName, Object value, Class<T> clz){
 		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
-		return this.getByUniqueColumn(tm.fieldMappings.get(fieldName).columnName, value, clz, tm.tableName);
+		return this.findByUniqueColumn(tm.fieldMappings.get(fieldName).columnName, value, clz, tm.tableName);
 	}
 	
 	/**
@@ -391,12 +391,12 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @return <T>
 	 */
 	@Override
-	public <T> T getByUniqueColumn(String columnName, Object value, Class<T> clz){
-		return this.getByUniqueColumn(columnName, value, clz, BaseMappingCache.getTableMapping(clz).tableName);
+	public <T> T findByUniqueColumn(String columnName, Object value, Class<T> clz){
+		return this.findByUniqueColumn(columnName, value, clz, BaseMappingCache.getTableMapping(clz).tableName);
 	}
 	
 	//根据唯一列查找对象
-	private <T> T getByUniqueColumn(String columnName, Object value, Class<T> clz, String tableName){
+	private <T> T findByUniqueColumn(String columnName, Object value, Class<T> clz, String tableName){
 		String sql = new StringBuffer("SELECT * FROM ").append(tableName).append(" WHERE ").append(columnName).append("=?").toString();
 		return super.getEntity(sql, clz, value);
 	}
@@ -432,9 +432,9 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @return List<T>
 	 */
 	@Override
-	public <T> List<T> getByWhereField(String fieldName, Object value, SearchType searchType, Class<T> clz){
+	public <T> List<T> findByWhereField(String fieldName, Object value, SearchType searchType, Class<T> clz){
 		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
-		return this.getByWhereColumn(tm.fieldMappings.get(fieldName).columnName, value, searchType, clz);
+		return this.findByWhereColumn(tm.fieldMappings.get(fieldName).columnName, value, searchType, clz);
 	}
 	
 	/**
@@ -446,7 +446,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @return List<T>
 	 */
 	@Override
-	public <T> List<T> getByWhereColumn(String columnName, Object value, SearchType searchType, Class<T> clz){
+	public <T> List<T> findByWhereColumn(String columnName, Object value, SearchType searchType, Class<T> clz){
 		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
 		StringBuffer sql = new StringBuffer("SELECT * FROM ").append(tm.tableName).append(" WHERE ").append(columnName).append(searchType.code);
 		List<Object> params = this.convertParam(value, searchType, sql);
