@@ -4,7 +4,8 @@
 
  <b>bootdao是基于spring-boot的持久层封装</b>
 
- <pre>
+<pre>
+
  简介：
   1.函数式封装，适合轻量业务以常见泛型函数方式访问数据层
   2.可与其他持久层框架并存，无依赖式兼容JPA或mybatis-plus的实体注解，仅依赖spring-boot基础包
@@ -20,7 +21,8 @@
   3.可同时兼并使用mybatis、jpa或JdbcTemplate等框架
 
  作者：wang.jia.le	2020-12-01	若发现BUG或疑惑请至信	wjmx1214@sina.com
- </pre>
+
+</pre>
 
  pom：
  
