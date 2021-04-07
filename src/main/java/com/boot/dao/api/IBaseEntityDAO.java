@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * 实体封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.2
+ * @version 1.0.4
  */
 public interface IBaseEntityDAO extends IBaseJDBC{
 
@@ -178,7 +178,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @param clz
 	 * @return <T>
 	 */
-	<T> T getByPK(Serializable pk, Class<T> clz);
+	<T> T findByPK(Serializable pk, Class<T> clz);
 	
 	/**
 	 * 根据唯一属性查找对象(需要有对应的列名映射)
@@ -187,7 +187,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @param clz
 	 * @return <T>
 	 */
-	<T> T getByUniqueField(String fieldName, Object value, Class<T> clz);
+	<T> T findByUniqueField(String fieldName, Object value, Class<T> clz);
 	
 	/**
 	 * 根据唯一列查找对象
@@ -196,7 +196,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @param clz
 	 * @return <T>
 	 */
-	<T> T getByUniqueColumn(String columnName, Object value, Class<T> clz);
+	<T> T findByUniqueColumn(String columnName, Object value, Class<T> clz);
 	
 	/**
 	 * 根据单个条件查找对象集合(属性名, 需要有对应的列名映射)
@@ -206,7 +206,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @param clz
 	 * @return List<T>
 	 */
-	<T> List<T> getByWhereField(String fieldName, Object value, SearchType searchType, Class<T> clz);
+	<T> List<T> findByWhereField(String fieldName, Object value, SearchType searchType, Class<T> clz);
 	
 	/**
 	 * 根据单个条件查找对象集合(列名)
@@ -216,7 +216,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @param clz
 	 * @return List<T>
 	 */
-	<T> List<T> getByWhereColumn(String columnName, Object value, SearchType searchType, Class<T> clz);
+	<T> List<T> findByWhereColumn(String columnName, Object value, SearchType searchType, Class<T> clz);
 	
 	/**
 	 * 根据主键更新单值(属性名)
