@@ -1,6 +1,7 @@
 package com.boot.dao.impl;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,12 +28,12 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.3
+ * @version 1.0.4
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
-	public BaseJDBC(String dataSourceName) {
-		super(dataSourceName);
+	public BaseJDBC(String dataSourceName, String transactionManagerName) {
+		super(dataSourceName, transactionManagerName);
 	}
 	
 	//----------------------------------------------------------增删改-----------------------------------------------------
@@ -46,12 +47,14 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	@Override
 	public int updateBatchSQL(String[] sqls) throws Exception{
 		int count = 0;//受影响行数
+		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			for (int i = 0; i < sqls.length; i++) {
 				BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sqls[i]);
 				if(i == 0) {
-					ps = super.getConnection().prepareStatement(sqls[0]);
+					conn = super.getConnection();
+					ps = conn.prepareStatement(sqls[0]);
 					ps.addBatch();
 				}else{
 					ps.addBatch(sqls[i]);
@@ -65,7 +68,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			this.close(ps, null);
+			this.close(ps, null, conn);
 		}
 		return count;
 	}
@@ -80,13 +83,15 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	@Override
 	public int updateBatchSQL(String sql, List<Object[]> params) throws Exception{
 		int count = 0;//受影响行数
+		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			if(params != null){
 				for (int i = 0; i < params.size(); i++) {
 					if(i == 0) {
 						BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, false, sql, params);
-						ps = super.getConnection().prepareStatement(sql);
+						conn = super.getConnection();
+						ps = conn.prepareStatement(sql);
 						ps.addBatch();
 					}else{
 						ps.addBatch(sql);
@@ -105,7 +110,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			this.close(ps, null);
+			this.close(ps, null, conn);
 		}
 		return count;
 	}
@@ -121,10 +126,12 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	public long insertAndGetId(String sql, Object... params) throws Exception{
 		BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sql, params);
 		long id = 0;
+		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try{
-			ps = super.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+			conn = super.getConnection();
+			ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			BaseDAOUtil.setParams(ps, params); //设置参数
 			int count = ps.executeUpdate();
 			if(count == 1){//获取ID
@@ -134,7 +141,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		}catch(Exception e){
 			throw e;
 		}finally{
-			this.close(ps, rs);
+			this.close(ps, rs, conn);
 		}
 		return id;
 	}
@@ -150,28 +157,37 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	public int updateSQL(String sql, Object... params) throws Exception{
 		BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sql, params);
 		int count = 0;//受影响行数
+		Connection conn = null;
 		PreparedStatement ps = null;
 		try{
-			ps = super.getConnection().prepareStatement(sql);
+			conn = super.getConnection();
+			ps = conn.prepareStatement(sql);
 			BaseDAOUtil.setParams(ps, params); //设置参数
 			count = ps.executeUpdate();
 		}catch(Exception e){
 			throw e;
 		}finally{
-			this.close(ps, null);
+			this.close(ps, null, conn);
 		}
 		return count;
 	}
 	
 	/**
-	 * 关闭资源(由于涉及事务问题，Connection资源交由spring处理)
+	 * 关闭资源(若配置了事务，则Connection资源交由spring处理；未配置事务，则在此释放Connection)
 	 * @param ps
 	 * @param rs
+	 * @param conn
 	 */
-	protected void close(PreparedStatement ps, ResultSet rs){
+	protected void close(PreparedStatement ps, ResultSet rs, Connection conn){
 		try {
 			if(rs != null) rs.close();
 			if(ps != null) ps.close();
+			if(conn != null && conn.getAutoCommit()) { //由于配置事务后，为手动提交模式；当未配置事务，则为自动提交模式，所以此处手动释放
+				org.springframework.jdbc.datasource.DataSourceUtils.releaseConnection(conn, super.getDataSource());
+				if(BaseDAOConfig.showSource) {
+					BaseDAOLog.info("当前增删改业务未配置事务，已自动释放连接；请检查是否遗漏事务声明!");
+				}
+			}
 		} catch (Exception e) {
 			BaseDAOLog.printException(e);
 		}
@@ -189,7 +205,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	protected <A> A getObject(String sql, Class<A> clz,  Object... params){
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(super.getConnection(), sql, params);
+			jq.query(super.getDataSource(), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				return this.getValueByJavaType(jq.rs, 1, clz);
 			}
@@ -213,7 +229,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		List<A> list = new ArrayList<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(super.getConnection(), sql, params);
+			jq.query(super.getDataSource(), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				list.add(this.getValueByJavaType(jq.rs, 1, clz));
 			}
@@ -238,7 +254,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		Map<String, A> map = new LinkedHashMap<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(super.getConnection(), sql, params);
+			jq.query(super.getDataSource(), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				String key = jq.rs.getString(1);
 				if(!isBlank(key)) {
@@ -264,7 +280,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		List<Object[]> list = new ArrayList<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(super.getConnection(), sql, params);
+			jq.query(super.getDataSource(), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				Object[] array = new Object[jq.columnCount];
 				for(int i=0; i<jq.columnCount; i++)
@@ -290,7 +306,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		List<String[]> list = new ArrayList<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(super.getConnection(), sql, params);
+			jq.query(super.getDataSource(), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				String[] array = new String[jq.columnCount];
 				for(int i=0; i<jq.columnCount; i++)
@@ -316,7 +332,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		List<Map<String, Object>> list = new ArrayList<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(super.getConnection(), sql, params);
+			jq.query(super.getDataSource(), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				Map<String, Object> map = new LinkedHashMap<>();
 				for(int i=0; i<jq.columnCount; i++)
@@ -342,7 +358,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		List<Map<String, String>> list = new ArrayList<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(super.getConnection(), sql, params);
+			jq.query(super.getDataSource(), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				Map<String, String> map = new LinkedHashMap<>();
 				for(int i=0; i<jq.columnCount; i++)
@@ -386,7 +402,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
 			BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
-			jq.query(super.getConnection(), sql, params);
+			jq.query(super.getDataSource(), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				if(outer == null) {
 					t = clz.getDeclaredConstructor().newInstance();//动态生成泛型的实例
@@ -438,7 +454,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		List<T> list = new ArrayList<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(BaseMappingCache.getTableMapping(clz), super.getConnection(), sql, params);
+			jq.query(BaseMappingCache.getTableMapping(clz), super.getDataSource(), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				T t = null;
 				if(outer == null) {
@@ -493,7 +509,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		Map<String, T> map = new LinkedHashMap<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
-			jq.query(BaseMappingCache.getTableMapping(clz), super.getConnection(), sql, params);
+			jq.query(BaseMappingCache.getTableMapping(clz), super.getDataSource(), super.getConnection(), sql, params);
 			while (jq.rs.next()){
 				T t = null;
 				if(outer == null) {
