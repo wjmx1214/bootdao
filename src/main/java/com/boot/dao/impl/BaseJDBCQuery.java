@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import com.boot.dao.config.BaseDAOConfig;
 import com.boot.dao.mapping.BaseColumnMapping;
 import com.boot.dao.mapping.BaseTableMapping;
@@ -15,9 +17,13 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 查询封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.3
+ * @version 1.0.4
  */
 class BaseJDBCQuery {
+	
+	DataSource dataSource;
+	
+	Connection conn;
 
 	PreparedStatement ps;
 
@@ -29,13 +35,16 @@ class BaseJDBCQuery {
 	
 	/*
 	 * 执行
+	 * @param dataSource
 	 * @param conn
 	 * @param sql
 	 * @param params
 	 * @throws Exception
 	 */
-	ResultSet query(Connection conn, String sql, Object... params) throws Exception {
+	ResultSet query(DataSource dataSource, Connection conn, String sql, Object... params) throws Exception {
 		BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sql, params);
+		this.dataSource = dataSource;
+		this.conn = conn;
 		this.ps = conn.prepareStatement(sql);
 		BaseDAOUtil.setParams(ps, params); 	//设置参数
 		this.rs = ps.executeQuery(); 		//获取结果集
@@ -46,13 +55,16 @@ class BaseJDBCQuery {
 	/*
 	 * 执行
 	 * @param tm
+	 * @param dataSource
 	 * @param conn
 	 * @param sql
 	 * @param params
 	 * @throws Exception
 	 */
-	ResultSet query(BaseTableMapping tm, Connection conn, String sql, Object... params) throws Exception {
+	ResultSet query(BaseTableMapping tm, DataSource dataSource, Connection conn, String sql, Object... params) throws Exception {
 		BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, BaseDAOConfig.showParam, sql, params);
+		this.dataSource = dataSource;
+		this.conn = conn;
 		this.ps = conn.prepareStatement(sql);
 		BaseDAOUtil.setParams(ps, params); 	//设置参数
 		this.rs = ps.executeQuery(); 		//获取结果集
@@ -66,13 +78,19 @@ class BaseJDBCQuery {
 	}
 	
 	/*
-	 * 关闭资源(由于涉及事务问题，Connection资源交由spring处理)
+	 * 关闭资源(若配置了事务，则Connection资源交由spring处理；未配置事务，则在此释放Connection)
 	 */
 	void close(){
 		try {
+			if(resultColumns != null) resultColumns = null;
 			if(rs != null) rs.close();
 			if(ps != null) ps.close();
-			if(resultColumns != null) resultColumns = null;
+			if(conn != null && conn.getAutoCommit()) { //由于配置事务后，为手动提交模式；当未配置事务，则为自动提交模式，所以此处手动释放
+				org.springframework.jdbc.datasource.DataSourceUtils.releaseConnection(conn, dataSource);
+				if(BaseDAOConfig.showSource) {
+					BaseDAOLog.info("当前查询业务未配置事务，已自动释放连接；若为多次频繁查询业务，可能导致性能降低!");
+				}
+			}
 		} catch (Exception e) {
 			BaseDAOLog.printException(e);
 		}
