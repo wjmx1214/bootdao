@@ -3,7 +3,7 @@ package com.boot.dao.api;
 /**
  * 使用示例与详细描述请查看readme()
  * @author 2020-12-01 create wang.jia.le	email	wjmx1214@sina.com
- * @version 1.0.3
+ * @version 1.0.4
  */
 public interface IBaseReadme {
 
@@ -12,6 +12,7 @@ public interface IBaseReadme {
 	说明：
 	bootdao是基于spring-boot的持久层封装
 	
+	简介：
 	 1.函数式封装，适合轻量业务以常见泛型函数方式访问数据层
 	 2.可与其他持久层框架并存，无依赖式兼容JPA或mybatis-plus的实体注解，仅依赖spring-boot基础包
 	 3.支持扩展更多函数，支持entity、dto、vo无感知无差别调用(配置好映射路径即可)
@@ -20,9 +21,10 @@ public interface IBaseReadme {
 	 6.支持SQL语句静态常量化，所以可自行实现静态SQL语句存放位置，如独立的xxx.dao文件，或可在Service层实现一个接口，用来配置SQL常量
 	 7.目前尚未经过大规模性能和稳定性测试，暂不支持缓存
 	
-	场景：业务简单但SQL语句较多时，可继承BaseTDAO(可指定一个带数据源的DAO来构造, 若未指定则默认为BaseDAO)
-		 业务更简单时，则直接在服务层注入IBaseDAO进行泛型函数式调用, 无需定义任何业务DAO
-		 业务复杂或对性能要求较高时可同时兼并使用mybatis或jpa等框架
+	使用：
+	 1.可直接在服务层注入IBaseDAO进行泛型函数式调用, 无需定义任何业务DAO
+	 2.可继承BaseTDAO<Entity>进行泛型类方式调用(可指定一个带数据源的DAO来构造, 若未指定则默认为BaseDAO)
+	 3.可同时兼并使用mybatis、jpa或JdbcTemplate等框架
 		 
 	作者：wang.jia.le		若发现BUG或疑惑请至信	wjmx1214@sina.com
 
@@ -30,18 +32,19 @@ public interface IBaseReadme {
 	 <dependency>
 	    <groupId>com.bootdao</groupId>
 	    <artifactId>bootdao-spring-boot-starter</artifactId>
-	    <version>1.0.3</version>
+	    <version>1.0.4</version>
 	</dependency>
 
 
 	yml配置(选配)： 
 		#关系型数据库持久层函数式封装; 如需使用多数据源, 使用限定数据源名称即可
-		#将数据源名称配置为: spring.datasource[datasource0 && (datasource1 || datasource2)]
-		#其中数据源名称 datasource0 必须存在, 且会自动转换为 dataSource 以便默认兼容其他框架
+		#将数据源名称配置为: spring.[datasource && (datasource1 || datasource2)]
+		#其中数据源名称 datasource 必须存在, 为默认数据源
 		#使用时分别对应: [IBaseDAO && (IBaseDAO1 || IBaseDAO2)]
-		#若不使用默认实现或默认实现不够用, 则继承 @Repository pulibc YourNameDAO extends BaseSourceMore{}
-		#注意: 多数据源时若使用了druid连接池, 请在启动类上加入@Import(com.boot.dao.config.BaseSourceMoreConfig.class)
-		#或添加包扫描com.boot.dao.config, 以便优先于druid自动配置加载
+		#事务管理器对应: [transactionManager &&(transactionManager1 || transactionManager2)]
+		#一个业务中只有一个数据源调用时使用: @Transactional(value = "transactionManager1", rollbackFor=Exception.class)
+		#一个业务中包含多个数据源调用时使用: @TransactionalMore(value = {"transactionManager", "transactionManager1"})，可省略rollbackFor，已默认捕获Throwable异常
+		#若不使用默认实现或默认实现不够用时, 自定义数据源DAO配置，参考并继承 @Repository public YourNameDAO extends BaseSourceMore{}
 
 		bootdao: #关系型数据库持久层函数式封装, 多数据源配置以及更多详细说明请参考IBaseReadme.class
 		    entity-paths: com.xxx.xxx.entity #实体类包路径, 用于entity、dto、vo无差别调用(可指定多个包路径用逗号分隔; 也可不配置, 由@EntityPath注解到Dto上)
@@ -94,14 +97,14 @@ public interface IBaseReadme {
 	    }
 	    
 	    +@Override
-	    public void getStuByName(String name) throws Exception{
-	    	//...getStuByName_sql
+	    public void findByStuName(String name) throws Exception{
+	    	//...findByStuName_sql
 	    }
 	}
-	public interface StuServiceSQL{
+	interface StuServiceSQL{
 		String stuList_sql1 = "SELECT * FROM stu WHERE age >= ?";
 		String stuList_sql2 = "SELECT * FROM stu WHERE age < ?";
-		String getStuByName_sql = "SELECT * FROM stu WHERE name = ?";
+		String findByStuName_sql = "SELECT * FROM stu WHERE name = ?";
 		//...
 	}
 	
