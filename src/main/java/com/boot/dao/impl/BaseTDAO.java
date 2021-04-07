@@ -20,7 +20,7 @@ import com.boot.dao.util.BaseDAOLog;
  * 可指定一个带数据源的DAO来构造, 若未指定则默认为BaseDAO
  * @param <T>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.2
+ * @version 1.0.4
  */
 @Import(BaseDAO.class)
 public abstract class BaseTDAO<T>{
@@ -156,8 +156,8 @@ public abstract class BaseTDAO<T>{
 	 * @param pk
 	 * @return <T>
 	 */
-	public T get(Serializable pk){
-		return DAO().getByPK(pk, classT);
+	public T findByPK(Serializable pk){
+		return DAO().findByPK(pk, classT);
 	}
 	
 	/**
@@ -166,8 +166,8 @@ public abstract class BaseTDAO<T>{
 	 * @param value
 	 * @return <T>
 	 */
-	public T getByUniqueField(String fieldName, Object value){
-		return DAO().getByUniqueField(fieldName, value, classT);
+	public T findByUniqueField(String fieldName, Object value){
+		return DAO().findByUniqueField(fieldName, value, classT);
 	}
 	
 	/**
@@ -176,8 +176,8 @@ public abstract class BaseTDAO<T>{
 	 * @param value
 	 * @return <T>
 	 */
-	public T getByUniqueColumn(String columnName, Object value) {
-		return DAO().getByUniqueColumn(columnName, value, classT);
+	public T findByUniqueColumn(String columnName, Object value) {
+		return DAO().findByUniqueColumn(columnName, value, classT);
 	}
 	
 	/**
@@ -187,8 +187,8 @@ public abstract class BaseTDAO<T>{
 	 * @param searchType
 	 * @return List<T>
 	 */
-	public List<T> getByWhereField(String fieldName, Object value, SearchType searchType){
-		return DAO().getByWhereField(fieldName, value, searchType, classT);
+	public List<T> findByWhereField(String fieldName, Object value, SearchType searchType){
+		return DAO().findByWhereField(fieldName, value, searchType, classT);
 	}
 	
 	/**
@@ -198,8 +198,8 @@ public abstract class BaseTDAO<T>{
 	 * @param searchType
 	 * @return List<T>
 	 */
-	public List<T> getByWhereColumn(String columnName, Object value, SearchType searchType){
-		return DAO().getByWhereColumn(columnName, value, searchType, classT);
+	public List<T> findByWhereColumn(String columnName, Object value, SearchType searchType){
+		return DAO().findByWhereColumn(columnName, value, searchType, classT);
 	}
 	
 	/**
