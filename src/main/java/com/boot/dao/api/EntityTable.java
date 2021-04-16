@@ -6,28 +6,30 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
+
 /**
 	实体类映射关系注解<br>
 	例：<pre>
-	+@EntityMeta(table = "xxx_stu")
+	+@EntityTable(table = "xxx_stu")
 	public class Stu{
 
-		+@EntityMeta(isId=true, idAuto=true)
+		+@EntityTable(isId=true, idAuto=true)
 		private Long id;
 
-		+@EntityMeta(column="stu_name")
+		+@EntityTable(column="stu_name")
 		private String name;
 
 		private Integer age;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.0.3
+	@version 1.0.5
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target({ElementType.FIELD,ElementType.TYPE}) 	// 定义注解的作用目标(类，常量，字段，方法等)
-@Documented 									// 表示该注解将被包含在javadoc中  
-public @interface EntityMeta {  
+@Documented 									// 表示该注解将被包含在javadoc中
+public @interface EntityTable {  
 
 	/**
 	 * 表名
@@ -35,7 +37,17 @@ public @interface EntityMeta {
 	 * 由于不配置时默会转换为小写表名，配置之后，可用以解决表名大小写敏感问题
 	 * @return String
 	 */
+	@AliasFor("value")
 	String table() default "";
+	
+	/**
+	 * 表名
+	 * 也可作用于，没有或未编写对应实体类，的非实体类配置，用于无SQL的API查询时映射表名<br>
+	 * 由于不配置时默会转换为小写表名，配置之后，可用以解决表名大小写敏感问题
+	 * @return String
+	 */
+	@AliasFor("table")
+	String value() default "";
 	
 	/**
 	 * 列名
