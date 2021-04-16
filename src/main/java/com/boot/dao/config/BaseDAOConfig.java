@@ -10,18 +10,18 @@ import com.boot.dao.mapping.BaseMappingCache;
 /**
  * bootdao基础配置
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.5
  */
 @Configuration
 public class BaseDAOConfig {
 
-	public static String[] entityPaths; 	//实体类包路径, 用于entity、dto、vo无差别调用(可指定多个包路径用逗号分隔; 也可不配置由@EntityMeta注解到Dto上)
+	public static String[] entityPaths; 	//实体类包路径, 用于entity、dto、vo无差别调用(可指定多个包路径用逗号分隔; 也可不配置由@EntityPath注解到Dto上)
 	public static String[] differentNames; 	//实体类与DTO或VO类名不相同的部分, 用于entity、dto、vo无差别调用, 可直接将其作为参数类型(可指定多个名称, 默认Dto,Vo)
 	public static boolean showSQL; 			//是否显示SQL语句, 主要用于调试(默认=false)
 	public static boolean showParam; 		//是否显示SQL参数, 主要用于调试(默认=false)
 	public static boolean showSource; 		//是否显示数据源相关信息, 主要用于调试(默认=false)
 	public static boolean autoCreateTime;	//当有创建时间字段时, 是否自动生成值(默认false)(根据名称createTime或createDate推理)(mysql5.x无法同时创建时间和更新时间自动配置, mysql8.x无问题)
-	public static String formatTime = "yyyy-MM-dd HH:mm:ss"; //时间类型默认格式化(具体参考EntityMeta.formatTime描述)
+	public static String formatTime = "yyyy-MM-dd HH:mm:ss"; //时间类型默认格式化(具体参考EntityTable.formatTime描述)
 	
 	@Value("${bootdao.entity-paths:#{null}}")
 	public void entityPaths(String[] entityPaths) {
