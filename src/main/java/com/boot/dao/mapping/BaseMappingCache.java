@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * DAO映射缓存类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.3
+ * @version 1.0.5
  */
 @Slf4j
 public abstract class BaseMappingCache {
@@ -118,7 +118,7 @@ public abstract class BaseMappingCache {
 	//根据当前类型查找对应实体类型
 	private static Class<?> getEntityClass(Class<?> clz){
 		try {
-			Class<?> entityClz = fromClassMeta(clz); //从类注解获取对应实体模板(优先于统一配置)
+			Class<?> entityClz = fromClassAnnotation(clz); //从类注解获取对应实体模板(优先于统一配置)
 			if(entityClz == null)
 				entityClz = fromConfig(clz); //从统一配置获取对应实体模板
 			return entityClz;
@@ -129,7 +129,7 @@ public abstract class BaseMappingCache {
 	}
 	
 	//从类注解获取对应实体模板
-	private static Class<?> fromClassMeta(Class<?> clz) throws Exception {
+	private static Class<?> fromClassAnnotation(Class<?> clz) throws Exception {
 		if(clz.isAnnotationPresent(EntityPath.class)) {
 			EntityPath entityPath = clz.getAnnotation(EntityPath.class);
 			if(entityPath.value().length() > 0) {
@@ -140,7 +140,7 @@ public abstract class BaseMappingCache {
 					return Class.forName(entityPath.value());
 				} catch (ClassNotFoundException e) {
 					throw new MappingException("未找到类[" + clz.getName() + "]对应的实体类, 请检查注解映射... "
-							+ "not found class [" + clz.getName() + "] mapping entity class, please check meta mapping...");
+							+ "not found class [" + clz.getName() + "] mapping entity class, please check annotation mapping...");
 				}
 			}
 		}
@@ -188,7 +188,7 @@ public abstract class BaseMappingCache {
 					Class<?> clz = Class.forName(className);
 					if(tableMappingCache.get(clz) == null) { //未发现缓存则创建
 						BaseTableMapping tm = BaseTableMappingUtil.createTableMapping(clz);
-						if(tm.metaType > 0) { //只缓存配置了ID注解的实体模板
+						if(tm.mappingType > 0) { //只缓存配置了ID注解的实体模板
 							tableMappingCache.put(clz, tm);
 							log.info("已扫描到实体类：" + className);
 						}
