@@ -11,7 +11,7 @@ import com.boot.dao.mapping.BaseSearchMapping;
 /**
  * 多条件动态查询父类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.5
  */
 public abstract class BaseSearch{
 
@@ -49,9 +49,9 @@ public abstract class BaseSearch{
 		StringBuffer where = new StringBuffer();
 		List<BaseSearchMapping> sms = BaseMappingCache.getSearchMapping(this.getClass());
 		for (BaseSearchMapping sm : sms) {
-			if(sm.whereIndex == index) {
-				if(sm.searchType == SType.nu_is || sm.searchType == SType.nu_not || sm.searchType == SType.em_is || sm.searchType == SType.em_not) {
-					where.append(" and ").append(sm.tableLabel).append(sm.columnName).append(sm.searchType.code);
+			if(sm.index == index) {
+				if(sm.searchType == SearchType.null_is || sm.searchType == SearchType.null_not || sm.searchType == SearchType.empty_is || sm.searchType == SearchType.empty_not) {
+					where.append(" and ").append(sm.tableAs).append(sm.column).append(sm.searchType.code);
 					continue;
 				}
 				Object value = sm.searchFieldGet(this);
@@ -59,8 +59,8 @@ public abstract class BaseSearch{
 					continue;
 				}
 
-				where.append(" and ").append(sm.tableLabel).append(sm.columnName).append(sm.searchType.code);
-				if(sm.searchType == SType.in || sm.searchType == SType.in_not) {
+				where.append(" and ").append(sm.tableAs).append(sm.column).append(sm.searchType.code);
+				if(sm.searchType == SearchType.in || sm.searchType == SearchType.in_not) {
 					StringBuffer question = new StringBuffer("(");
 					String[] array = value.toString().split(",");
 					for (Object o : array) {
@@ -70,13 +70,13 @@ public abstract class BaseSearch{
 					question.deleteCharAt(question.length()-1).append(')');
 					where.append(question);
 				}else {
-					if(sm.searchType == SType.like_l) {
+					if(sm.searchType == SearchType.like_left) {
 						params.add("%" + value.toString());
-					}else if(sm.searchType == SType.like_r) {
+					}else if(sm.searchType == SearchType.like_right) {
 						params.add(value.toString() + "%");
-					}else if(sm.searchType == SType.like_a) {
+					}else if(sm.searchType == SearchType.like_all) {
 						params.add("%" + value.toString() + "%");
-					}else if(sm.searchType == SType.bet) {
+					}else if(sm.searchType == SearchType.between) {
 						String[] array = value.toString().split(",");
 						params.add(array[0]);
 						params.add(array[1]);
