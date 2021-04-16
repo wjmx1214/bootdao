@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 数据源类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.4
+ * @version 1.0.5
  */
 @Slf4j
 //装配基础配置类,spring上下文工具类,多数据源配置类,多数据源事务整合配置类
@@ -63,14 +63,14 @@ abstract class BaseSource{
 	 * @throws SQLException
 	 */
 	protected Connection getConnection() throws SQLException {
-		Connection con = org.springframework.jdbc.datasource.DataSourceUtils.getConnection(this.getDataSource());
+		Connection conn = org.springframework.jdbc.datasource.DataSourceUtils.getConnection(this.getDataSource());
 		if(BaseDAOConfig.showSource) {
 			log.info(new StringBuffer("\n\n----- 当前DAO类型: ").append(this.getClass().getName())
 					.append("; 数据源: ").append(dataSource.getClass().getName() + "@" + Integer.toHexString(dataSource.hashCode()))
 					.append("; 数据源名称：").append(dataSourceName).append(" -----\n").append("----- 数据源详情: \n").append(dataSource)
-					.append("\n----- 当前Connection：").append(con).append(" -----\n").toString());
+					.append("\n----- 当前Connection：").append(conn).append(" -----\n").toString());
 		}
-		return con;
+		return conn;
 	}
 
 }
