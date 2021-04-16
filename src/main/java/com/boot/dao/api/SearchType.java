@@ -1,20 +1,20 @@
 package com.boot.dao.api;
 
 /**
- * 多条件动态查询方式枚举(全名版)
+ * 多条件动态查询方式枚举
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.0.5
  */
 public enum SearchType {
 	
 	/**
 	 * = 等于
 	 */
-	equal		(" = ?"),
+	eq			(" = ?"),
 	/**
 	 * <> 不等于
 	 */
-	equal_not	(" <> ?"),
+	eq_not		(" <> ?"),
 	/**
 	 * < 小于
 	 */
@@ -22,7 +22,7 @@ public enum SearchType {
 	/**
 	 * <= 小于等于
 	 */
-	small_equal	(" <= ?"),
+	small_eq	(" <= ?"),
 	/**
 	 * > 大于
 	 */
@@ -30,7 +30,7 @@ public enum SearchType {
 	/**
 	 * >= 大于等于
 	 */
-	big_equal	(" >= ?"),
+	big_eq		(" >= ?"),
 	/**
 	 * like %xxx<br>
 	 * 当同一个列需要多个模糊匹配时, 可建立多个查询属性, 同时配置相同的列名或列别名
