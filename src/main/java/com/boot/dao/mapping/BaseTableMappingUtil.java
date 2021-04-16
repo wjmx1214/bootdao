@@ -7,13 +7,13 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.boot.dao.api.EntityMeta;
+import com.boot.dao.api.EntityTable;
 import com.boot.dao.util.BaseDAOUtil;
 
 /**
  * 表映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.3
+ * @version 1.0.5
  */
 @SuppressWarnings("unchecked")
 abstract class BaseTableMappingUtil {
@@ -61,10 +61,10 @@ abstract class BaseTableMappingUtil {
 	static BaseTableMapping createTableMapping(Class<?> clz) throws Exception{
 		
 		BaseTableMapping tm = new BaseTableMapping();
-		if(clz.isAnnotationPresent(EntityMeta.class)){
-			EntityMeta em = clz.getAnnotation(EntityMeta.class);
-			tm.tableName = em.table();
-			tm.isHump = em.isHump();
+		if(clz.isAnnotationPresent(EntityTable.class)){
+			EntityTable et = clz.getAnnotation(EntityTable.class);
+			tm.tableName = et.value().length() > 0 ? et.value() : et.table();
+			tm.isHump = et.isHump();
 		}
 		
 		if(mybatisPlusExist && tm.tableName.length() == 0){
@@ -101,17 +101,17 @@ abstract class BaseTableMappingUtil {
 			boolean isHump = true; //是否开启驼峰转换
 			boolean isFindId = false; //是否找到ID映射
 
-			if(f.isAnnotationPresent(EntityMeta.class)){ //判断该字段是否使用了EntityMeta注解
-				EntityMeta em = f.getAnnotation(EntityMeta.class);
-				if(em.isMapping()) { //映射此字段
-					columnName = em.column(); //列名
-					isHump = em.isHump();
-					formatTime = em.formatTime();
-					if(em.isId()){
+			if(f.isAnnotationPresent(EntityTable.class)){ //判断该字段是否使用了EntityTable注解
+				EntityTable et = f.getAnnotation(EntityTable.class);
+				if(et.isMapping()) { //映射此字段
+					columnName = et.column(); //列名
+					isHump = et.isHump();
+					formatTime = et.formatTime();
+					if(et.isId()){
 						isFindId = true;
-						tm.metaType = 1;
+						tm.mappingType = 1;
 						tm.idField = f;
-						tm.idAuto = em.idAuto();
+						tm.idAuto = et.idAuto();
 					}
 				}else {
 					continue;
@@ -131,7 +131,7 @@ abstract class BaseTableMappingUtil {
 				}
 				if(!isFindId && f.isAnnotationPresent(map1.get("TableId"))){
 					isFindId = true;
-					tm.metaType = 2;
+					tm.mappingType = 2;
 					tm.idField = f;
 					String idType = map2.get("TableId_type").invoke( f.getAnnotation(map1.get("TableId")) ).toString();
 					if("AUTO".equals(idType)) {
@@ -149,7 +149,7 @@ abstract class BaseTableMappingUtil {
 				}
 				if(!isFindId && f.isAnnotationPresent(map1.get("Id"))){
 					isFindId = true;
-					tm.metaType = 3;
+					tm.mappingType = 3;
 					tm.idField = f;
 					if(f.isAnnotationPresent(map1.get("GeneratedValue"))){
 						Object GeneratedValue = f.getAnnotation(map1.get("GeneratedValue"));
@@ -191,7 +191,7 @@ abstract class BaseTableMappingUtil {
 		tm.tableName = entityTm.tableName;
 		tm.isHump = entityTm.isHump;
 		tm.isEntity = false;
-		tm.metaType = entityTm.metaType;
+		tm.mappingType = entityTm.mappingType;
 		if(entityTm.createTime != null) {
 			tm.createTime = new BaseColumnMapping(entityTm.createTime.columnName, null, entityTm.createTime.formatDate);
 		}
