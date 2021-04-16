@@ -3,7 +3,7 @@ package com.boot.dao.api;
 /**
  * 使用示例与详细描述请查看readme()
  * @author 2020-12-01 create wang.jia.le	email	wjmx1214@sina.com
- * @version 1.0.4
+ * @version 1.0.5
  */
 public interface IBaseReadme {
 
@@ -14,10 +14,10 @@ public interface IBaseReadme {
 	
 	简介：
 	 1.函数式封装，适合轻量业务以常见泛型函数方式访问数据层
-	 2.可与其他持久层框架并存，无依赖式兼容JPA或mybatis-plus的实体注解，仅依赖spring-boot基础包
+	 2.可与其他持久层框架并存，无依赖式兼容JPA或mybatis-plus的实体注解，也可使用EntityTable注解，仅依赖spring-boot基础包
 	 3.支持扩展更多函数，支持entity、dto、vo无感知无差别调用(配置好映射路径即可)
 	 4.支持静默多数据源，若yml或xml按特定名称配置好多数据源后，无需其他配置即可使用多数据源
-	 5.支持注解式多条件动态查询，参考：com.boot.dao.api.SearchMeta 或 com.boot.dao.api.Search
+	 5.支持注解式多条件动态查询，参考：com.boot.dao.api.Search
 	 6.支持SQL语句静态常量化，所以可自行实现静态SQL语句存放位置，如独立的xxx.dao文件，或可在Service层实现一个接口，用来配置SQL常量
 	 7.目前尚未经过大规模性能和稳定性测试，暂不支持缓存
 	
@@ -32,7 +32,7 @@ public interface IBaseReadme {
 	 <dependency>
 	    <groupId>com.bootdao</groupId>
 	    <artifactId>bootdao-spring-boot-starter</artifactId>
-	    <version>1.0.4</version>
+	    <version>1.0.5</version>
 	</dependency>
 
 
@@ -111,9 +111,9 @@ public interface IBaseReadme {
 	多条件动态查询示例：
 	public class StuSearch extends PageSearch{ //BaseSearch
 		private Long id;
-		+@Search(column="stu_name", type=SType.like_r)
+		+@Search(column="stu_name", type=SearchType.like_right)
 		private String name;
-		+@Search(column="stu_name", type=SType.like_a, index=2, label="s")
+		+@Search(column="stu_name", type=SearchType.like_all, tableAs="s", index=2)
 		private String name2;
 	}
 
