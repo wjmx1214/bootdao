@@ -23,7 +23,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.4
+ * @version 1.0.5
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -418,7 +418,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//根据模板查询映射(未找到主键映射时抛出未映射异常)
 	private BaseTableMapping getTableMapping(Class<?> clz) throws Exception{
 		BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
-		if(tm.metaType == 0 || tm.idField == null)
+		if(tm.mappingType == 0 || tm.idField == null)
 			throw new MappingException("not found id mapping, please check! className: " + clz.getName());
 		return tm;
 	}
