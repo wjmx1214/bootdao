@@ -8,7 +8,7 @@
 
  简介：
   1.函数式封装，适合轻量业务以常见泛型函数方式访问数据层
-  2.可与其他持久层框架并存，无依赖式兼容JPA或mybatis-plus的实体注解，仅依赖spring-boot基础包
+  2.可与其他持久层框架并存，无依赖式兼容JPA或mybatis-plus的实体注解，也可使用EntityTable注解，仅依赖spring-boot基础包
   3.支持扩展更多函数，支持entity、dto、vo无感知无差别调用(配置好映射路径即可)
   4.支持静默多数据源，若yml或xml按特定名称配置好多数据源后，无需其他配置即可使用多数据源
   5.支持注解式多条件动态查询，参考：com.boot.dao.api.Search
