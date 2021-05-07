@@ -13,7 +13,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 表映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.5
+ * @version 1.0.6
  */
 @SuppressWarnings("unchecked")
 abstract class BaseTableMappingUtil {
@@ -26,9 +26,9 @@ abstract class BaseTableMappingUtil {
 
 	static {
 		try {
-			Class<Annotation> TableNameClass = (Class<Annotation>) Class.forName("com.baomidou.mybatisplus.annotation.TableName");
-			Class<Annotation> TableFieldClass = (Class<Annotation>) Class.forName("com.baomidou.mybatisplus.annotation.TableField");
-			Class<Annotation> TableIdClass = (Class<Annotation>) Class.forName("com.baomidou.mybatisplus.annotation.TableId");
+			Class<Annotation> TableNameClass = (Class<Annotation>) Thread.currentThread().getContextClassLoader().loadClass("com.baomidou.mybatisplus.annotation.TableName");
+			Class<Annotation> TableFieldClass = (Class<Annotation>) Thread.currentThread().getContextClassLoader().loadClass("com.baomidou.mybatisplus.annotation.TableField");
+			Class<Annotation> TableIdClass = (Class<Annotation>) Thread.currentThread().getContextClassLoader().loadClass("com.baomidou.mybatisplus.annotation.TableId");
 			map1.put("TableName", 			TableNameClass);
 			map1.put("TableField", 			TableFieldClass);
 			map1.put("TableId", 			TableIdClass);
@@ -40,11 +40,11 @@ abstract class BaseTableMappingUtil {
 		} catch (Exception e) {}
 
 		try {
-			Class<Annotation> TableClass = (Class<Annotation>) Class.forName("javax.persistence.Table");
-			Class<Annotation> ColumnClass = (Class<Annotation>) Class.forName("javax.persistence.Column");
-			Class<Annotation> TransientClass = (Class<Annotation>) Class.forName("javax.persistence.Transient");
-			Class<Annotation> IdClass = (Class<Annotation>) Class.forName("javax.persistence.Id");
-			Class<Annotation> GeneratedValueClass = (Class<Annotation>) Class.forName("javax.persistence.GeneratedValue");
+			Class<Annotation> TableClass = (Class<Annotation>) Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Table");
+			Class<Annotation> ColumnClass = (Class<Annotation>) Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Column");
+			Class<Annotation> TransientClass = (Class<Annotation>) Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Transient");
+			Class<Annotation> IdClass = (Class<Annotation>) Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Id");
+			Class<Annotation> GeneratedValueClass = (Class<Annotation>) Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.GeneratedValue");
 			map1.put("Table", 					TableClass);
 			map1.put("Column", 					ColumnClass);
 			map1.put("Transient", 				TransientClass);
