@@ -21,7 +21,7 @@ import com.boot.dao.util.BaseDAOLog;
 /**
  * 多数据源默认配置类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.4
+ * @version 1.0.6
  */
 @Configuration
 public class BaseSourceMoreConfig {
@@ -32,7 +32,7 @@ public class BaseSourceMoreConfig {
 
 	static {
 		try {
-			Class<?> druidDataSourceBuilderClass = Class.forName("com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder");
+			Class<?> druidDataSourceBuilderClass = Thread.currentThread().getContextClassLoader().loadClass("com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder");
 			createMethod = druidDataSourceBuilderClass.getDeclaredMethod("create");
 			buildMethod = druidDataSourceBuilderClass.getDeclaredMethod("build");
 		} catch (Exception e) {}
