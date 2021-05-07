@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * DAO映射缓存类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.5
+ * @version 1.0.6
  */
 @Slf4j
 public abstract class BaseMappingCache {
@@ -137,7 +137,7 @@ public abstract class BaseMappingCache {
 					return clz; //关闭自动匹配
 				}
 				try {
-					return Class.forName(entityPath.value());
+					return Thread.currentThread().getContextClassLoader().loadClass(entityPath.value());
 				} catch (ClassNotFoundException e) {
 					throw new MappingException("未找到类[" + clz.getName() + "]对应的实体类, 请检查注解映射... "
 							+ "not found class [" + clz.getName() + "] mapping entity class, please check annotation mapping...");
@@ -157,7 +157,7 @@ public abstract class BaseMappingCache {
 		String entityName = (differentName.length() == 0) ? className : className.substring(0, className.length() - differentName.length());
 		for (String entityPath : BaseDAOConfig.entityPaths) {
 			try {
-				return Class.forName(entityPath + "." + entityName);
+				return Thread.currentThread().getContextClassLoader().loadClass(entityPath + "." + entityName);
 			} catch (ClassNotFoundException e) {}
 		}
 		return clz; //当未找到对应实体类时，返回该类型自身，一般情况是未做映射配置，只是用作查询接收模板
@@ -185,7 +185,7 @@ public abstract class BaseMappingCache {
 			List<String> classNames = BaseScanClassUtil.getClassName(entityPath, true);
 			for (String className : classNames) {
 				try {
-					Class<?> clz = Class.forName(className);
+					Class<?> clz = Thread.currentThread().getContextClassLoader().loadClass(className);
 					if(tableMappingCache.get(clz) == null) { //未发现缓存则创建
 						BaseTableMapping tm = BaseTableMappingUtil.createTableMapping(clz);
 						if(tm.mappingType > 0) { //只缓存配置了ID注解的实体模板
