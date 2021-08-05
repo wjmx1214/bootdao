@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * 实体封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.4
+ * @version 1.0.7
  */
 public interface IBaseEntityDAO extends IBaseJDBC{
 
@@ -160,17 +160,19 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	/**
 	 * 删除
 	 * @param t
+	 * @return boolean
 	 * @throws Exception
 	 */
-	<T> void delete(T t) throws Exception;
+	<T> boolean delete(T t) throws Exception;
 	
 	/**
 	 * 根据主键删除
 	 * @param pk
 	 * @param clz
+	 * @return boolean
 	 * @throws Exception
 	 */
-	<T> void delete(Serializable pk, Class<T> clz) throws Exception;
+	<T> boolean delete(Serializable pk, Class<T> clz) throws Exception;
 	
 	/**
 	 * 根据主键查找对象
@@ -241,7 +243,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> int updateColumnByPK(Serializable pk, Class<T> clz, String columnName, Object value) throws Exception;
 	
 	/**
-	 * 分页包装(目前仅支持MYSQL)
+	 * 分页包装, 单表且无子查询可省略SQL(目前仅支持MYSQL)
 	 * @param search
 	 * @param clz
 	 * @return Page<T>
