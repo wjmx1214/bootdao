@@ -24,7 +24,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.0.5
+	@version 1.0.7
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target({ElementType.FIELD,ElementType.TYPE}) 	// 定义注解的作用目标(类，常量，字段，方法等)
@@ -66,6 +66,24 @@ public @interface EntityTable {
 	 * @return boolean
 	 */
 	boolean idAuto() default false;
+	
+	/**
+	 * 是否开启保存映射(true=是)
+	 * @return boolean
+	 */
+	boolean saveMapping() default true;
+	
+	/**
+	 * 是否开启新增映射(true=是)
+	 * @return boolean
+	 */
+	boolean createMapping() default true;
+	
+	/**
+	 * 是否开启更新映射(true=是)
+	 * @return boolean
+	 */
+	boolean updateMapping() default true;
 	
 	/**
 	 * 是否映射(true=映射)<br>
