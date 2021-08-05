@@ -3,7 +3,7 @@ package com.boot.dao.api;
 /**
  * 使用示例与详细描述请查看readme()
  * @author 2020-12-01 create wang.jia.le	email	wjmx1214@sina.com
- * @version 1.0.6
+ * @version 1.0.8
  */
 public interface IBaseReadme {
 
@@ -32,7 +32,7 @@ public interface IBaseReadme {
 	 <dependency>
 	    <groupId>com.bootdao</groupId>
 	    <artifactId>bootdao-spring-boot-starter</artifactId>
-	    <version>1.0.6</version>
+	    <version>1.0.8</version>
 	</dependency>
 
 
