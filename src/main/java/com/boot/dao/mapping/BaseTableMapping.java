@@ -1,7 +1,9 @@
 package com.boot.dao.mapping;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,10 +12,11 @@ import com.boot.dao.util.BaseDAOLog;
 /**
  * 表映射
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.5
+ * @version 1.0.8
  */
 public class BaseTableMapping {
 
+	public Class<?> clz;						//类型
 	public String tableName = "";				//表名
 	public String idColumnName = "";			//ID列名
 	public Field idField;						//ID对应的Field
@@ -43,21 +46,36 @@ public class BaseTableMapping {
 	public void idFieldSet(Object obj, Serializable value) throws Exception {
 		idField.set(obj, value);
 	}
-	
-	//判断一个Object是否为空, 且toString()可转为字符串类型 (true为空)
+
+	//判断一个Object是否为空
 	private static boolean isBlankObj(Object obj) {
-        if (obj == null)
-            return true;
-        String str = obj.toString();
-        int l = str.length();
-        if (l > 0) {
-            for (int i = 0; i < l; i++) {
-                if (!Character.isWhitespace(str.charAt(i))) {
-                    return false;
-                }
-            }
-        }
-        return true;
+		if (obj == null)
+		    return true;
+		if(obj.getClass().isArray()) {
+			int length = Array.getLength(obj);
+			for (int i = 0; i < length; i++) {
+				Object item = Array.get(obj, i);
+					if(item != null && item.toString().trim().length() > 0) {
+						return false;
+					}
+				}
+			return true;
+		}else if(obj instanceof Map) {
+			return ((Map<?,?>)obj).size() == 0;
+		}else if(obj instanceof Collection) {
+			return ((Collection<?>)obj).size() == 0;
+		}else {
+		    String str = obj.toString();
+		    int l = str.length();
+		    if (l > 0) {
+			for (int i = 0; i < l; i++) {
+			    if (!Character.isWhitespace(str.charAt(i))) {
+				return false;
+			    }
+			}
+		    }
+		    return true;
+		}
 	}
 
 }
