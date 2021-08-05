@@ -20,7 +20,7 @@ import com.boot.dao.util.BaseDAOLog;
  * 可指定一个带数据源的DAO来构造, 若未指定则默认为BaseDAO
  * @param <T>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.4
+ * @version 1.0.7
  */
 @Import(BaseDAO.class)
 public abstract class BaseTDAO<T>{
@@ -117,10 +117,10 @@ public abstract class BaseTDAO<T>{
 	 * @param sql
 	 * @param columnName 将指定的列作为key
 	 * @param params SQL语句中对应的?号参数
-	 * @return Map<String, T>
+	 * @return Map<A, T> A为[Integer|Long|String]中的一种基础类型(否则返回空集)
 	 */
-	public Map<String, T> listMap(String sql, String columnName, Object... params){
-		return DAO().getEntitysMap(sql, columnName, classT, params);
+	public <A extends Serializable> Map<A, T> listMap(String sql, String columnName, Class<A> clzA, Object... params){
+		return DAO().getEntitysMap(sql, columnName, clzA, classT, params);
 	}
 	
 	/**
@@ -135,10 +135,11 @@ public abstract class BaseTDAO<T>{
 	/**
 	 * 根据主键删除
 	 * @param pk
+	 * @return boolean
 	 * @throws Exception
 	 */
-	public void delete(Serializable pk) throws Exception{
-		DAO().delete(pk, classT);
+	public boolean delete(Serializable pk) throws Exception{
+		return DAO().delete(pk, classT);
 	}
 	
 	/**
@@ -227,7 +228,7 @@ public abstract class BaseTDAO<T>{
 	}
 
 	/**
-	 * 分页包装(目前仅支持MYSQL)
+	 * 分页包装, 单表且无子查询可省略SQL(目前仅支持MYSQL)
 	 * @param search
 	 * @return Page<T>
 	 */
