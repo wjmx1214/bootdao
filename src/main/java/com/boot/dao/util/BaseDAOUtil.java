@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * DAO工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.2
+ * @version 1.0.7
  */
 public abstract class BaseDAOUtil {
 
@@ -210,5 +210,20 @@ public abstract class BaseDAOUtil {
 	    }
 	    return null;
 	}
-	
+
+    /**
+     * 获取字符串中, 子串出现的次数
+     * @param parent 父串
+     * @param sub 子串
+     * @return int
+     */
+    public static int subStringCount(String parent,String sub) {
+        int num = 0;
+        while (parent.contains(sub)) {
+        	parent = parent.substring(parent.indexOf(sub) + sub.length());
+            num ++;
+        }
+        return num;
+    }
+
 }
