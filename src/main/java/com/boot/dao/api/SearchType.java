@@ -3,7 +3,7 @@ package com.boot.dao.api;
 /**
  * 多条件动态查询方式枚举
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.5
+ * @version 1.0.7
  */
 public enum SearchType {
 	
@@ -47,15 +47,15 @@ public enum SearchType {
 	 */
 	like_all	(" like ?"),
 	/**
-	 * in 逗号分隔字符串(替代 or xxx = xxx)
+	 * in 数组 | 集合 | 逗号分隔字符串(替代 or xxx = xxx)
 	 */
 	in			(" in"),
 	/**
-	 * not in 逗号分隔字符串(替代 or xxx <> xxx)
+	 * not in 数组 | 集合 | 逗号分隔字符串(替代 or xxx <> xxx)
 	 */
 	in_not		(" not in"),
 	/**
-	 * between 逗号分隔字符串
+	 * between 数组 | 集合 | 逗号分隔字符串
 	 */
 	between		(" between ? and ?"),
 	/**
