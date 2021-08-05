@@ -23,7 +23,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.5
+ * @version 1.0.8
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -269,22 +269,26 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		StringBuffer setSQL = new StringBuffer();
 		for (String columnName : tm.columnMappings.keySet()) {
 			BaseColumnMapping cm = tm.columnMappings.get(columnName);
-			Object value = cm.field.get(t);
-			if(value == null && BaseDAOConfig.autoCreateTime && tm.hasCreateTime){
-				if("createTime".equals(cm.field.getName()) || "createDate".equals(cm.field.getName())) {
-					value = super.formatDate(System.currentTimeMillis(), cm.formatDate); //当创建时间为空时，根据配置决定是否自动生成
+			if(cm.saveMapping && cm.createMapping) {
+				Object value = cm.field.get(t);
+				if(value == null && BaseDAOConfig.autoCreateTime && tm.hasCreateTime){
+					if("createTime".equals(cm.field.getName()) || "createDate".equals(cm.field.getName())) {
+						value = super.formatDate(System.currentTimeMillis(), cm.formatTime); //当创建时间为空时，根据配置决定是否自动生成
+					}
 				}
-			}
-			if(value == null || cm.field == tm.idField || "null".equals(value.toString().toLowerCase()))
-				continue;
-			if( empty || !empty && !isBlankObj(value) ){
-				setSQL.append(columnName).append("=?,");
-				paramsList.add(value);
+				if(value == null || cm.field == tm.idField || "null".equals(value.toString().toLowerCase()))
+					continue;
+				if( empty || !empty && !isBlankObj(value) ){
+					setSQL.append(columnName).append("=?,");
+					paramsList.add(value);
+				}
 			}
 		}
 		if(BaseDAOConfig.autoCreateTime && !tm.hasCreateTime && tm.createTime != null) {
-			setSQL.append(tm.createTime.columnName).append("=?,"); //配置为自动生成，且实体类有创建时间字段，而当前类没有该字段
-			paramsList.add(super.formatDate(System.currentTimeMillis(), tm.createTime.formatDate));
+			if(tm.createTime.saveMapping && tm.createTime.createMapping) {
+				setSQL.append(tm.createTime.columnName).append("=?,"); //配置为自动生成，且实体类有创建时间字段，而当前类没有该字段
+				paramsList.add(super.formatDate(System.currentTimeMillis(), tm.createTime.formatTime));
+			}
 		}
 		int length = setSQL.length();
 		if(length == 0){
@@ -304,14 +308,16 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		StringBuffer setSQL = new StringBuffer();
 		for (String columnName : tm.columnMappings.keySet()) {
 			BaseColumnMapping cm = tm.columnMappings.get(columnName);
-			Object value = cm.field.get(t);
-			if(value == null || value.equals(cm.field.get(old)) || cm.field == tm.idField || "null".equals(value.toString().toLowerCase()))
-				continue;
-			if("createTime".equals(cm.field.getName()) || "createDate".equals(cm.field.getName()))
-				continue; //更新时发现有创建时间字段则跳过
-			if( empty || !empty && !isBlankObj(value) ){
-				setSQL.append(columnName).append("=?,");
-				paramsList.add(value);
+			if(cm.saveMapping && cm.updateMapping) {
+				Object value = cm.field.get(t);
+				if(value == null || value.equals(cm.field.get(old)) || cm.field == tm.idField || "null".equals(value.toString().toLowerCase()))
+					continue;
+				if("createTime".equals(cm.field.getName()) || "createDate".equals(cm.field.getName()))
+					continue; //更新时发现有创建时间字段则跳过
+				if( empty || !empty && !isBlankObj(value) ){
+					setSQL.append(columnName).append("=?,");
+					paramsList.add(value);
+				}
 			}
 		}
 		int length = setSQL.length();
@@ -326,30 +332,32 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	/**
 	 * 删除
 	 * @param t
+	 * @return boolean
 	 * @throws Exception
 	 */
 	@Override
-	public <T> void delete(T t) throws Exception{
+	public <T> boolean delete(T t) throws Exception{
 		BaseTableMapping tm = this.getTableMapping(t);
-		this.delete(tm.idFieldGet(t), t.getClass(), tm);
+		return this.delete(tm.idFieldGet(t), t.getClass(), tm);
 	}
 	
 	/**
 	 * 根据主键删除
 	 * @param pk
 	 * @param clz
+	 * @return boolean
 	 * @throws Exception
 	 */
 	@Override
-	public <T> void delete(Serializable pk, Class<T> clz) throws Exception{
-		this.delete(pk, clz, this.getTableMapping(clz));
+	public <T> boolean delete(Serializable pk, Class<T> clz) throws Exception{
+		return this.delete(pk, clz, this.getTableMapping(clz));
 	}
 	
 	//根据主键删除
-	private <T> void delete(Serializable pk, Class<T> clz, BaseTableMapping tm) throws Exception{
+	private <T> boolean delete(Serializable pk, Class<T> clz, BaseTableMapping tm) throws Exception{
 		checkPK(pk, clz);
 		String sql = new StringBuffer("DELETE FROM ").append(tm.tableName).append(" WHERE ").append(tm.idColumnName).append("=?").toString();
-		super.updateSQL(sql, pk);
+		return super.updateSQL(sql, pk) > 0;
 	}
 	
 	/**
@@ -525,7 +533,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//-------------------------------------------------------- 分页查询 -------------------------------------------------------
 	
 	/**
-	 * 分页包装(目前仅支持MYSQL)
+	 * 分页包装, 单表且无子查询可省略SQL(目前仅支持MYSQL)
 	 * @param search
 	 * @param clz
 	 * @return Page<T>
@@ -547,7 +555,11 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//分页包装(目前仅支持MYSQL)
 	@SuppressWarnings("unchecked")
 	private <T> Page<T> page(boolean isMap, PageSearch search, Class<T> clz){
-		search.appendWhere();
+		if(!isMap && search.SQL == null) { //单表省略了SQL时
+			BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
+			search.SQL = "select * from " + tm.tableName + " where 1=1#{where}";
+		}
+		search.appendWhere(clz);
 		if(search.countSQL == null) {
 			search.countSQL = "SELECT count(1) AS count FROM (#{SQL}) AS count_auto".replace("#{SQL}", search.SQL);
 		}
