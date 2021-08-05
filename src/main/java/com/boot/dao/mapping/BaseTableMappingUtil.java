@@ -13,7 +13,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 表映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.6
+ * @version 1.0.7
  */
 @SuppressWarnings("unchecked")
 abstract class BaseTableMappingUtil {
@@ -61,6 +61,8 @@ abstract class BaseTableMappingUtil {
 	static BaseTableMapping createTableMapping(Class<?> clz) throws Exception{
 		
 		BaseTableMapping tm = new BaseTableMapping();
+		tm.clz = clz;
+		
 		if(clz.isAnnotationPresent(EntityTable.class)){
 			EntityTable et = clz.getAnnotation(EntityTable.class);
 			tm.tableName = et.value().length() > 0 ? et.value() : et.table();
@@ -97,6 +99,9 @@ abstract class BaseTableMappingUtil {
 			
 			String fieldName = f.getName();
 			String columnName = ""; //列名
+			boolean saveMapping = true; //是否开启保存映射
+			boolean createMapping = true; //是否开启新增映射
+			boolean updateMapping = true; //是否开启更新映射
 			String formatTime = null;
 			boolean isHump = true; //是否开启驼峰转换
 			boolean isFindId = false; //是否找到ID映射
@@ -105,6 +110,9 @@ abstract class BaseTableMappingUtil {
 				EntityTable et = f.getAnnotation(EntityTable.class);
 				if(et.isMapping()) { //映射此字段
 					columnName = et.column(); //列名
+					saveMapping = et.saveMapping();
+					createMapping = et.createMapping();
+					updateMapping = et.updateMapping();
 					isHump = et.isHump();
 					formatTime = et.formatTime();
 					if(et.isId()){
@@ -162,7 +170,7 @@ abstract class BaseTableMappingUtil {
 			}
 
 			//未配置映射列名时，则以和字段名相同的名称进行映射
-			//若无注解映射，且与数据库的列名也不相同，可在SQL语句中使用 AS 使之对应
+			//若无注解映射，且与数据库的列名也不相同，可在SQL语句中使用 AS 使之对应，但必须配置saveMapping = false
 			if(columnName.length() == 0){
 				columnName = fieldName;
 				if(isHump && tm.isHump){ //只有字段和类都为开启状态，才会转换
@@ -174,7 +182,7 @@ abstract class BaseTableMappingUtil {
 			if(isFindId) tm.idColumnName = columnName;
 			f.setAccessible(true); //将字段设置为可强制访问
 
-			BaseColumnMapping cm = new BaseColumnMapping(columnName, f, formatTime);
+			BaseColumnMapping cm = new BaseColumnMapping(columnName, f, saveMapping, createMapping, updateMapping, formatTime);
 			tm.columnMappings.put(columnName, cm);
 			tm.fieldMappings.put(fieldName, cm);
 
@@ -187,24 +195,29 @@ abstract class BaseTableMappingUtil {
 	
 	//根据实体映射信息创建Dto或Vo类对应的映射信息
 	static BaseTableMapping createByEntityMapping(Class<?> clz, BaseTableMapping entityTm) {
-		BaseTableMapping tm = new BaseTableMapping();
-		tm.tableName = entityTm.tableName;
-		tm.isHump = entityTm.isHump;
-		tm.isEntity = false;
-		tm.mappingType = entityTm.mappingType;
-		if(entityTm.createTime != null) {
-			tm.createTime = new BaseColumnMapping(entityTm.createTime.columnName, null, entityTm.createTime.formatDate);
+		BaseTableMapping tm = null;
+		if(clz.getSuperclass() == entityTm.clz) { //当继承自实体类时，直接指定为实体类的映射
+			tm = entityTm;
+		}else {
+			tm = new BaseTableMapping();
+			tm.tableName = entityTm.tableName;
+			tm.isHump = entityTm.isHump;
+			tm.isEntity = false;
+			tm.mappingType = entityTm.mappingType;
+			if(entityTm.createTime != null) {
+				tm.createTime = new BaseColumnMapping(entityTm.createTime.columnName, null, entityTm.createTime.saveMapping, entityTm.createTime.createMapping, entityTm.createTime.updateMapping, entityTm.createTime.formatTime);
+			}
 		}
-		
+
 		Field[] fields = clz.getDeclaredFields(); //获取该类型所有字段，包括私有字段，但不包括继承字段
 		for (Field field : fields) {
 			if(Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()))
 				continue;//当为final或static修饰时，则跳过
 			
 			String fieldName = field.getName();
+			field.setAccessible(true); //将字段设置为可强制访问
 			BaseColumnMapping entityCm = entityTm.fieldMappings.get(fieldName);
 			if(entityCm != null) {
-				field.setAccessible(true); //将字段设置为可强制访问
 				if(fieldName.equals(entityTm.idField.getName())) {
 					tm.idColumnName = entityTm.idColumnName;
 					tm.idAuto = entityTm.idAuto;
@@ -216,9 +229,16 @@ abstract class BaseTableMappingUtil {
 						tm.hasCreateTime = true;
 					}
 				}
-				BaseColumnMapping cm = new BaseColumnMapping(entityCm.columnName, field, entityCm.formatDate);
+				BaseColumnMapping cm = new BaseColumnMapping(entityCm.columnName, field, entityCm.saveMapping, entityCm.createMapping, entityCm.updateMapping, entityCm.formatTime);
 				tm.columnMappings.put(cm.columnName, cm);
 				tm.fieldMappings.put(fieldName, cm);
+			}else { //本类字段仅作为查询映射
+				String columnName = BaseDAOUtil.humpToUnderline(fieldName);
+				if(entityTm.columnMappings.get(columnName) == null) {
+					BaseColumnMapping cm = new BaseColumnMapping(columnName, field, false, false, false);
+					tm.columnMappings.put(columnName, cm);
+					tm.fieldMappings.put(fieldName, cm);
+				}
 			}
 		}
 		return tm;
