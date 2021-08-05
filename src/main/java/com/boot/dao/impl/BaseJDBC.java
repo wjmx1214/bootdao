@@ -1,5 +1,7 @@
 package com.boot.dao.impl;
 
+import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,7 +31,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.4
+ * @version 1.0.8
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
@@ -412,7 +415,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				for(int i=0; i<jq.columnCount; i++) {
 					BaseColumnMapping cm = tm.columnMappings.get(jq.rs.getMetaData().getColumnLabel(i+1).toLowerCase());
 					if(cm != null) {
-						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatDate);
+						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatTime);
 						if(value != null) {
 							cm.field.set(t, value); //为字段赋值
 						}
@@ -465,7 +468,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				for(int i=0; i<jq.columnCount; i++) {
 					BaseColumnMapping cm = jq.resultColumns.get(i);
 					if(cm != null) {
-						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatDate);
+						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatTime);
 						if(value != null) {
 							cm.field.set(t, value); //为字段赋值
 						}
@@ -485,13 +488,14 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * 获取entity集合《key, Entity》形式(导出数据请使用Map或数组, 否则可能影响性能)
 	 * @param sql
 	 * @param columnName 将指定的列作为key
+	 * @param keyClz
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return Map<String, T>
+	 * @return Map<A, T> A为[Integer|Long|String]中的一种基础类型(否则返回空集)，T为实体类型
 	 */
 	@Override
-	public <T> Map<String, T> getEntitysMap(String sql, String columnName, Class<T> clz, Object... params){
-		return this.getInnerEntitysMap(null, sql, columnName, clz, params);
+	public <A extends Serializable, T> Map<A, T> getEntitysMap(String sql, String columnName, Class<A> keyClz, Class<T> clz, Object... params){
+		return this.getInnerEntitysMap(null, sql, columnName, keyClz, clz, params);
 	}
 	
 	/**
@@ -499,14 +503,15 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * @param outer	外部类实例
 	 * @param sql
 	 * @param columnName 将指定的列作为key
+	 * @param keyClz
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return Map<String, T>
+	 * @return Map<A, T> A为[Integer|Long|String]中的一种基础类型(否则返回空集)，T为实体类型
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> Map<String, T> getInnerEntitysMap(Object outer, String sql, String columnName, Class<T> clz, Object... params){
-		Map<String, T> map = new LinkedHashMap<>();
+	public <A extends Serializable, T> Map<A, T> getInnerEntitysMap(Object outer, String sql, String columnName, Class<A> keyClz, Class<T> clz, Object... params){
+		Map<A, T> map = new LinkedHashMap<>();
 		BaseJDBCQuery jq = new BaseJDBCQuery();
 		try{
 			jq.query(BaseMappingCache.getTableMapping(clz), super.getDataSource(), super.getConnection(), sql, params);
@@ -517,15 +522,18 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				}else {
 					t = (T)clz.getDeclaredConstructors()[0].newInstance(outer);//动态生成泛型的实例(内部类，通过外部类实例创建)
 				}
-				String key = null;
+				A key = null;
 				for(int i=0; i<jq.columnCount; i++) {
 					BaseColumnMapping cm = jq.resultColumns.get(i);
 					if(cm != null) {
-						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatDate);
+						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatTime);
 						if(value != null) {
 							cm.field.set(t, value); //为字段赋值
 							if(cm.columnName.equals(columnName)) {
-								key = value.toString();
+								key = convertToJavaType(keyClz, value);
+								if(key == null) {
+									return map; //当不是指定的3中基础类型时，直接返回空集
+								}
 							}
 						}
 					}
@@ -540,6 +548,20 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 			jq.close();
 		}
 		return map;
+	}
+	
+	//将value转换为指定的基础类型
+	@SuppressWarnings("unchecked")
+	private <A> A convertToJavaType(Class<A> clzA, Object value) {
+		if(clzA == String.class) {
+			return (A)value.toString();
+		}else if(clzA == Integer.class) {
+			return (A) Integer.valueOf(value.toString());
+		}else if(clzA == Long.class) {
+			return (A) Long.valueOf(value.toString());
+		}else {
+			return null;
+		}
 	}
 	
 	/**
@@ -668,10 +690,26 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
     }
 	
 	/**
-	 * 判断一个Object是否为空, 且toString()可转为字符串类型 (true为空)
+	 * 判断一个Object是否为空 (true为空)
 	 */
 	protected boolean isBlankObj(Object obj) {
-		return obj == null ? true : this.isBlank(obj.toString());
+        if (obj == null)
+            return true;
+        if(obj.getClass().isArray()) {
+        	int length = Array.getLength(obj);
+        	for (int i = 0; i < length; i++) {
+        		Object item = Array.get(obj, i);
+				if(item != null && item.toString().trim().length() > 0) {
+					return false;
+				}
+			}
+        	return true;
+        }else if(obj instanceof Map) {
+        	return ((Map<?,?>)obj).size() == 0;
+        }else if(obj instanceof Collection) {
+        	return ((Collection<?>)obj).size() == 0;
+        }
+		return this.isBlank(obj.toString());
 	}
 
 }
