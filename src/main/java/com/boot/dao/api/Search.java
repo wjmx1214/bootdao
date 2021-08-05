@@ -9,7 +9,8 @@ import java.lang.annotation.Target;
 import org.springframework.core.annotation.AliasFor;
 
 /**
-	多条件动态查询注解, 作用于search类字段上, 用于自动封装查询条件, 简化开发
+	多条件动态查询注解, 作用于search类字段上, 用于自动封装查询条件, 简化开发<br>
+	注意：若该Search类用于多表共用时，调用appendWhere函数时，请带上实体类Class过滤非当前表的列，否则会出现SQL错误
 	例：<pre>
 	public class StuSearch extends PageSearch{ //BaseSearch
 
@@ -20,6 +21,9 @@ import org.springframework.core.annotation.AliasFor;
 
 		+@Search(column="stu_name", type=SearchType.like_all, tableAs="s", index=2)
 		private String name2;
+		
+		+@Search(column="stu_age", sort=Sort.DESC)
+		private Integer age;
 
 	}
 
@@ -45,7 +49,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.0.5
+	@version 1.0.7
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target(ElementType.FIELD) 						// 定义注解的作用目标(类，常量，字段，方法等)
@@ -90,5 +94,21 @@ public @interface Search {
 	 * @return int
 	 */
 	int index() default 1;
+	
+	/**
+	 * 是否排序, 声明在前的属性优先加入排序规则<br>
+	 * 且不影响该属性作为查询条件(默认="")
+	 * @return Sort
+	 */
+	Sort sort() default Sort.NOT;
+	
+	/**
+	 * 自定义条件语句，用于复杂的条件判断<br>
+	 * 当该值不为空时，则直接并且只拼接该属性字段值<br>
+	 * 并根据?号个数添加对应的参数，当为字符串类型时，带逗号的参数会进行分割对应<br>
+	 * 非字符串类型，或逗号分隔对应不上时则作为单值进行重复对应
+	 * @return String
+	 */
+	String whereSQL() default "";
 
 }
