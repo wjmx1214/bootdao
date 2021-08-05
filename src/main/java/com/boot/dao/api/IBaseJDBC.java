@@ -1,12 +1,13 @@
 package com.boot.dao.api;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 /**
  * JDBC封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.2
+ * @version 1.0.7
  */
 public interface IBaseJDBC {
 	
@@ -138,21 +139,23 @@ public interface IBaseJDBC {
 	 * 获取entity集合《key, Entity》形式(导出数据请使用Map或数组, 否则可能影响性能)
 	 * @param sql
 	 * @param columnName 将指定的列作为key
+	 * @param keyClz
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return Map<String, T>
+	 * @return Map<A, T> A为[Integer|Long|String]中的一种基础类型(否则返回空集)，T为实体类型
 	 */
-	<T> Map<String, T> getEntitysMap(String sql, String columnName, Class<T> clz, Object... params);
+	<A extends Serializable, T> Map<A, T> getEntitysMap(String sql, String columnName, Class<A> keyClz, Class<T> clz, Object... params);
 	
 	/**
 	 * 获取内部类entity集合《key, Entity》形式(导出数据请使用Map或数组, 否则可能影响性能)
 	 * @param outer	外部类实例
 	 * @param sql
 	 * @param columnName 将指定的列作为key
+	 * @param keyClz
 	 * @param clz
 	 * @param params SQL语句中对应的?号参数
-	 * @return Map<String, T>
+	 * @return Map<A, T> A为[Integer|Long|String]中的一种基础类型(否则返回空集)，T为实体类型
 	 */
-	<T> Map<String, T> getInnerEntitysMap(Object outer, String sql, String columnName, Class<T> clz, Object... params);
+	<A extends Serializable, T> Map<A, T> getInnerEntitysMap(Object outer, String sql, String columnName, Class<A> keyClz, Class<T> clz, Object... params);
 
 }
