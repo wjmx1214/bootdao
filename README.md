@@ -87,7 +87,7 @@
 		search.SQL = "(select * from stu where 1=1 #{where1或任意标识}) union (select * from stu s where s.on_class=1 #{where2或任意标识})";
 		return baseDAO.page(search, StuDto.class);
 		or
-		search.appendWhere("(select * from stu where 1=1 #{where1或任意标识}) union (select * from stu s where s.on_class=1 #{where2或任意标识})");
+		//search.appendWhere("select * from stu where 1=1 #{where}"); //单表分页查询全量字段可省略SQL
 		return baseDAO.page(search, StuDto.class);
 	}
 	public List<StuDto> listStu(StuSearch search){
