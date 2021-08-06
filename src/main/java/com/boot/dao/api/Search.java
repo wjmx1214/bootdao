@@ -34,7 +34,7 @@ import org.springframework.core.annotation.AliasFor;
 
 		or
 
-		search.appendWhere("(select * from stu where 1=1 #{where1或任意标识}) union (select * from stu s where s.on_class=1 #{where2或任意标识})");
+		//search.appendWhere("select * from stu where 1=1 #{where}"); //单表分页查询全量字段可省略SQL
 		return baseDAO.page(search, StuDto.class);
 	}
 
@@ -49,7 +49,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.0.7
+	@version 1.0.9
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target(ElementType.FIELD) 						// 定义注解的作用目标(类，常量，字段，方法等)
