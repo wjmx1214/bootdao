@@ -10,7 +10,7 @@ import com.boot.dao.util.BaseDAOLog;
 /**
  * 多条件动态查询映射
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.8
+ * @version 1.0.9
  */
 public class BaseSearchMapping {
 
@@ -30,6 +30,7 @@ public class BaseSearchMapping {
 			if(isDate && value != null) {
 				return new java.text.SimpleDateFormat(formatTime).format(value);
 			}
+			return value;
 		} catch (Exception e) {
 			BaseDAOLog.printException(e);
 		}
