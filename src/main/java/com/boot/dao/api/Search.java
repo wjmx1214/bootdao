@@ -24,6 +24,13 @@ import org.springframework.core.annotation.AliasFor;
 		
 		+@Search(column="stu_age", sort=Sort.DESC)
 		private Integer age;
+		
+		+@Search(type=SearchType.between, dateFormat="yyyy-MM-dd HH:mm:ss")
+		private String[] createDate;
+		
+		+@DateTimeFormat(pattern="yyyy-MM-dd")
+		+@Search(type=SearchType.between)
+		private String updateDate; //2020-12-01,2021-01-01
 
 	}
 
@@ -49,7 +56,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.0.9
+	@version 1.1.0
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target(ElementType.FIELD) 						// 定义注解的作用目标(类，常量，字段，方法等)
@@ -110,5 +117,20 @@ public @interface Search {
 	 * @return String
 	 */
 	String whereSQL() default "";
+	
+	/**
+	 * 日期字段的格式，支持Date、Date[]、String、String(xx,xx)、String[]、List、Set类型<br>
+	 * 未配置时，则判断是否使用了@DateTimeFormat注解，都配置时，则以该属性优先<br>
+	 * 仅在拼接SQL时获取格式化后的日期，原值保持接收后的状态
+	 * @return String
+	 */
+	String dateFormat() default "";
+	
+	/**
+	 * 是否映射为查询字段(true=映射)<br>
+	 * 屏蔽该字段参与where组建，一般用于接收类型后，作为其他字段先置条件
+	 * @return boolean
+	 */
+	boolean isMapping() default true;
 
 }
