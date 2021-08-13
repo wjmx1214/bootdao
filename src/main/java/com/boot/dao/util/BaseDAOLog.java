@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * DAO日志输出管理类
  * @author 2021-03-05 create wang.jia.le
- * @version 1.0.1
+ * @version 1.1.0
  */
 @Slf4j
 public abstract class BaseDAOLog {
@@ -38,6 +38,14 @@ public abstract class BaseDAOLog {
 	 */
 	public static void printException(Exception e) {
 		log.error("bootdao exception: ", e);
+	}
+	
+	/**
+	 * 输出异常日志
+	 * @param e
+	 */
+	public static void printException(String msg, Exception e) {
+		log.error("bootdao exception: " + msg, e);
 	}
 	
 	/**
