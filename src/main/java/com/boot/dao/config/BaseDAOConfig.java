@@ -6,11 +6,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import com.boot.dao.mapping.BaseMappingCache;
+import com.boot.dao.util.SnowflakeIdWorker;
 
 /**
  * bootdao基础配置
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.5
+ * @version 1.1.0
  */
 @Configuration
 public class BaseDAOConfig {
@@ -22,6 +23,7 @@ public class BaseDAOConfig {
 	public static boolean showSource; 		//是否显示数据源相关信息, 主要用于调试(默认=false)
 	public static boolean autoCreateTime;	//当有创建时间字段时, 是否自动生成值(默认false)(根据名称createTime或createDate推理)(mysql5.x无法同时创建时间和更新时间自动配置, mysql8.x无问题)
 	public static String formatTime = "yyyy-MM-dd HH:mm:ss"; //时间类型默认格式化(具体参考EntityTable.formatTime描述)
+	public static SnowflakeIdWorker snowflakeIdWorker; //基于雪花算法的ID生成器
 	
 	@Value("${bootdao.entity-paths:#{null}}")
 	public void entityPaths(String[] entityPaths) {
@@ -51,6 +53,11 @@ public class BaseDAOConfig {
 	@Value("${bootdao.auto-createtime:false}")
 	public void autoCreateTime(boolean autoCreateTime) {
 		BaseDAOConfig.autoCreateTime = autoCreateTime;
+	}
+	
+	@Value("${bootdao.snowflake-id-worker:1,1}")
+	public void snowflakeIdWorker(String[] worker) {
+		BaseDAOConfig.snowflakeIdWorker = new SnowflakeIdWorker(Long.parseLong(worker[0]), Long.parseLong(worker[1]));
 	}
 
 	// 根据配置扫描实体类，若未配置，则在运行时生成映射
