@@ -8,7 +8,7 @@ import java.util.List;
  * 多条件动态查询(分页包装类)
  * @param <T>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.1
+ * @version 1.1.0
  */
 public class Page<T> implements Serializable{
 	
@@ -138,6 +138,14 @@ public class Page<T> implements Serializable{
 
 	public void setPageIndexChange(boolean pageIndexChange) {
 		this.pageIndexChange = pageIndexChange;
+	}
+
+	public int getLinkSize() {
+		return linkSize;
+	}
+
+	public void setLinkSize(int linkSize) {
+		this.linkSize = linkSize;
 	}
 
 }
