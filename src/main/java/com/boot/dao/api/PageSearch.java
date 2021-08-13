@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * 多条件动态查询父类(分页)
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.7
+ * @version 1.1.0
  */
 public abstract class PageSearch extends BaseSearch{
 
@@ -36,7 +36,7 @@ public abstract class PageSearch extends BaseSearch{
 	
 	@Override
 	public final String appendWhere() {
-		return this.appendWhere(Integer.class); //由于函数多态问题，此处无法用null作为参数，后续使用时进行判断
+		return this.appendWhere(Integer.class); //由于函数多态问题，此处无法用null作为参数，后面使用时进行判断
 	}
 	
 	@Override
@@ -65,7 +65,7 @@ public abstract class PageSearch extends BaseSearch{
 	 * @return String
 	 */
 	public final String appendWhere(String sql, String countSQL) {
-		return this.appendWhere(Integer.class); //由于函数多态问题，此处无法用null作为参数，后续使用时进行判断
+		return this.appendWhere(Integer.class); //由于函数多态问题，此处无法用null作为参数，后面使用时进行判断
 	}
 	
 	/**
@@ -80,6 +80,22 @@ public abstract class PageSearch extends BaseSearch{
 		super.SQL = sql;
 		this.countSQL = countSQL;
 		return this.appendWhere(clz);
+	}
+
+	public int getPageIndex() {
+		return pageIndex;
+	}
+
+	public void setPageIndex(int pageIndex) {
+		this.pageIndex = pageIndex;
+	}
+
+	public int getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
 	}
 
 }
