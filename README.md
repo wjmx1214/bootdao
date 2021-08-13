@@ -12,7 +12,7 @@
   3.支持扩展更多函数，支持entity、dto、vo无感知无差别调用(配置好映射路径即可)
   4.支持静默多数据源，若yml或xml按特定名称配置好多数据源后，无需其他配置即可使用多数据源
   5.支持注解式多条件动态查询，单表分页查询全量字段可省略SQL，参考：com.boot.dao.api.Search
-  6.支持SQL语句静态常量化，所以可自行实现静态SQL语句存放位置，如独立的xxx.dao文件，或可在Service层实现一个接口，用来配置SQL常量
+  6.支持SQL语句静态常量化，可自行实现静态SQL语句存放位置，如独立的xxx.dao文件，或可在Service层实现一个接口，用来配置SQL常量
   7.目前尚未经过大规模性能和稳定性测试，暂不支持缓存
 
  使用：
@@ -29,7 +29,7 @@
 	 <dependency>
         <groupId>com.bootdao</groupId>
         <artifactId>bootdao-spring-boot-starter</artifactId>
-        <version>1.0.9</version>
+        <version>1.1.0</version>
     </dependency>
 
  yml配置(选配)：
@@ -41,6 +41,7 @@
 	    #show-param: true #是否显示SQL参数, 主要用于调试(默认=false)
 	    #show-source: true #是否显示数据源相关信息, 主要用于调试(默认=false)
 	    #different-names: Dto, Vo #实体类与DTO或VO类名不相同的部分, 用于entity、dto、vo无差别调用, 可直接将其作为参数类型(可指定多个名称, 默认Dto,Vo)
+	    #snowflake-id-worker: 1, 1 #基于雪花算法的ID生成器, 工作ID (0~31) / 数据中心ID (0~31) (目前自动生成情况下, 仅用于clickhouse库表主键)(默认1, 1)
 </pre>
 
  若yml未配置或类名无法对应，但需要entity、dto、vo无差别调用时，可在Dto类中通过@EntityPath注解配置
