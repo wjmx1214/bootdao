@@ -23,7 +23,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.8
+ * @version 1.1.0
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -244,14 +244,24 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		T old = (id == null) ? null : (T)this.findByUniqueColumn(tm.idColumnName, id, t.getClass(), tm.tableName);
 		List<Object> paramsList = new ArrayList<>();
 		if(old == null){ //新增
-			String sql = this.appendCreateSQL(t, tm, paramsList, empty, id);
-			if(sql != null) {
-				if(tm.idAuto){ //自增
-					Long newId = super.insertAndGetId(sql, paramsList.toArray());
-					id = (tm.idField.getType() == Integer.class || tm.idField.getType() == int.class) ? newId.intValue() : newId;
-					tm.idFieldSet(t, id);
-				}else{
-					super.updateSQL(sql, paramsList.toArray());
+			if(super.sourceType == BaseSourceType.clickhouse) {
+				if(tm.idAuto){ //自动生成
+					//id = UUID.randomUUID().toString().replaceAll("-","");
+					id = BaseDAOConfig.snowflakeIdWorker.nextId();
+				}
+				String sql = this.appendCreateSQLValues(t, tm, paramsList, empty, id);
+				super.updateSQL(sql, paramsList.toArray());
+				tm.idFieldSet(t, id);
+			}else {
+				String sql = this.appendCreateSQLValues(t, tm, paramsList, empty, id);
+				if(sql != null) {
+					if(tm.idAuto){ //自增
+						Long newId = super.insertAndGetId(sql, paramsList.toArray());
+						id = (tm.idField.getType() == Integer.class || tm.idField.getType() == int.class) ? newId.intValue() : newId;
+						tm.idFieldSet(t, id);
+					}else{
+						super.updateSQL(sql, paramsList.toArray());
+					}
 				}
 			}
 		}else{ //更新
@@ -264,7 +274,53 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		return t;
 	}
 
+	//拼接SQL(新增)(values语法)
+	private <T> String appendCreateSQLValues(T t, BaseTableMapping tm, List<Object> paramsList, boolean empty, Serializable id) throws Exception{
+		StringBuffer nameSQL = new StringBuffer();
+		StringBuffer paramSQL = new StringBuffer();
+		for (String columnName : tm.columnMappings.keySet()) {
+			BaseColumnMapping cm = tm.columnMappings.get(columnName);
+			if(cm.saveMapping && cm.createMapping) {
+				Object value = cm.field.get(t);
+				if(value == null && BaseDAOConfig.autoCreateTime && tm.hasCreateTime){
+					if("createTime".equals(cm.field.getName()) || "createDate".equals(cm.field.getName())) {
+						value = super.formatDate(System.currentTimeMillis(), cm.formatTime); //当创建时间为空时，根据配置决定是否自动生成
+					}
+				}
+				if(value == null || cm.field == tm.idField || "null".equals(value.toString().toLowerCase()))
+					continue;
+				if( empty || !empty && !isBlankObj(value) ){
+					nameSQL.append(columnName).append(",");
+					paramSQL.append("?,");
+					paramsList.add(value);
+				}
+			}
+		}
+		if(BaseDAOConfig.autoCreateTime && !tm.hasCreateTime && tm.createTime != null) {
+			if(tm.createTime.saveMapping && tm.createTime.createMapping) {
+				nameSQL.append(tm.createTime.columnName).append(","); //配置为自动生成，且实体类有创建时间字段，而当前类没有该字段
+				paramSQL.append("?,");
+				paramsList.add(super.formatDate(System.currentTimeMillis(), tm.createTime.formatTime));
+			}
+		}
+		int length = nameSQL.length();
+		if(length == 0){
+			return null;
+		}
+		nameSQL.deleteCharAt(length-1);
+		paramSQL.deleteCharAt(paramSQL.length()-1);
+		if(!tm.idAuto || id != null){ //非自增
+			nameSQL.append(',').append(tm.idColumnName);
+			paramSQL.append(",?");
+			paramsList.add(id);
+		}
+		StringBuffer sql = new StringBuffer("INSERT INTO ").append(tm.tableName).append("(").append(nameSQL).append(") VALUES(").append(paramSQL).append(")");
+		return sql.toString();
+	}
+
 	//拼接SQL(新增)
+	@SuppressWarnings("unused")
+	@Deprecated
 	private <T> String appendCreateSQL(T t, BaseTableMapping tm, List<Object> paramsList, boolean empty, Serializable id) throws Exception{
 		StringBuffer setSQL = new StringBuffer();
 		for (String columnName : tm.columnMappings.keySet()) {
@@ -296,7 +352,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		}
 		setSQL.deleteCharAt(length-1);
 		StringBuffer sql = new StringBuffer("INSERT INTO ").append(tm.tableName).append(" SET ").append(setSQL);
-		if(!tm.idAuto){ //非自增
+		if(!tm.idAuto || id != null){ //非自增
 			sql.append(',').append(tm.idColumnName).append("=?");
 			paramsList.add(id);
 		}
@@ -326,7 +382,13 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		}
 		setSQL.deleteCharAt(length-1);
 		paramsList.add(id);
-		return new StringBuffer("UPDATE ").append(tm.tableName).append(" SET ").append(setSQL).append(" WHERE ").append(tm.idColumnName).append("=?").toString();
+		StringBuffer sql = null;
+		if(super.sourceType == BaseSourceType.clickhouse) {
+			sql = new StringBuffer("ALTER TABLE ").append(tm.tableName).append(" UPDATE ").append(setSQL).append(" WHERE ").append(tm.idColumnName).append("=?");
+		}else {
+			sql = new StringBuffer("UPDATE ").append(tm.tableName).append(" SET ").append(setSQL).append(" WHERE ").append(tm.idColumnName).append("=?");
+		}
+		return sql.toString();
 	}
 
 	/**
@@ -356,7 +418,12 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//根据主键删除
 	private <T> boolean delete(Serializable pk, Class<T> clz, BaseTableMapping tm) throws Exception{
 		checkPK(pk, clz);
-		String sql = new StringBuffer("DELETE FROM ").append(tm.tableName).append(" WHERE ").append(tm.idColumnName).append("=?").toString();
+		String sql = null;
+		if(super.sourceType == BaseSourceType.clickhouse) {
+			sql = new StringBuffer("ALTER TABLE ").append(tm.tableName).append(" DELETE ").append(" WHERE ").append(tm.idColumnName).append("=?").toString();
+		}else {
+			sql = new StringBuffer("DELETE FROM ").append(tm.tableName).append(" WHERE ").append(tm.idColumnName).append("=?").toString();
+		}
 		return super.updateSQL(sql, pk) > 0;
 	}
 	
@@ -526,7 +593,12 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	public <T> int updateColumnByPK(Serializable pk, Class<T> clz, String columnName, Object value) throws Exception{
 		checkPK(pk, clz);
 		BaseTableMapping tm = this.getTableMapping(clz);
-		String sql = new StringBuffer("UPDATE ").append(tm.tableName).append(" SET ").append(columnName).append("=? WHERE ").append(tm.idColumnName).append("=?").toString();
+		String sql = null;
+		if(super.sourceType == BaseSourceType.clickhouse) {
+			sql = new StringBuffer("ALTER TABLE ").append(tm.tableName).append(" UPDATE ").append(columnName).append("=? WHERE ").append(tm.idColumnName).append("=?").toString();
+		}else {
+			sql = new StringBuffer("UPDATE ").append(tm.tableName).append(" SET ").append(columnName).append("=? WHERE ").append(tm.idColumnName).append("=?").toString();
+		}
 		return super.updateSQL(sql, value, pk);
 	}
 	
