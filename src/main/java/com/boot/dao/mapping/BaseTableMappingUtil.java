@@ -13,7 +13,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 表映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.7
+ * @version 1.1.0
  */
 @SuppressWarnings("unchecked")
 abstract class BaseTableMappingUtil {
@@ -218,7 +218,7 @@ abstract class BaseTableMappingUtil {
 			field.setAccessible(true); //将字段设置为可强制访问
 			BaseColumnMapping entityCm = entityTm.fieldMappings.get(fieldName);
 			if(entityCm != null) {
-				if(fieldName.equals(entityTm.idField.getName())) {
+				if(entityTm.mappingType > 0 && entityTm.idField != null && fieldName.equals(entityTm.idField.getName())) {
 					tm.idColumnName = entityTm.idColumnName;
 					tm.idAuto = entityTm.idAuto;
 					tm.idField = field;
