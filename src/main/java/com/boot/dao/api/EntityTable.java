@@ -24,7 +24,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.0.7
+	@version 1.1.0
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target({ElementType.FIELD,ElementType.TYPE}) 	// 定义注解的作用目标(类，常量，字段，方法等)
@@ -62,7 +62,8 @@ public @interface EntityTable {
 	boolean isId() default false;
 	
 	/**
-	 * ID是否为自增(true=是)
+	 * ID是否为自增(true=是)<br>
+	 * clickhouse数据库自动生成雪花算法ID
 	 * @return boolean
 	 */
 	boolean idAuto() default false;
