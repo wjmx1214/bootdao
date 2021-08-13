@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +16,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 多条件动态查询父类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.8
+ * @version 1.1.0
  */
 public abstract class BaseSearch{
 
@@ -32,7 +31,7 @@ public abstract class BaseSearch{
 	}
 	
 	public String appendWhere() {
-		return this.appendWhere(Integer.class); //由于函数多态问题，此处无法用null作为参数，后续使用时进行判断
+		return this.appendWhere(Integer.class); //由于函数多态问题，此处无法用null作为参数，后面使用时进行判断
 	}
 	
 	public String appendWhere(Class<?> clz) {
@@ -49,7 +48,7 @@ public abstract class BaseSearch{
 	}
 	
 	public final String appendWhere(String sql) {
-		return this.appendWhere(sql, Integer.class); //由于函数多态问题，此处无法用null作为参数，后续使用时进行判断
+		return this.appendWhere(sql, Integer.class); //由于函数多态问题，此处无法用null作为参数，后面使用时进行判断
 	}
 	
 	public final String appendWhere(String sql, Class<?> clz) {
@@ -86,6 +85,9 @@ public abstract class BaseSearch{
 				}
 				
 				if(sm.whereSQL.length() > 0) {
+					if(sm.whereSQL.charAt(0) != ' ') {
+						where.append(' ');
+					}
 					where.append(sm.whereSQL);
 					int count = BaseDAOUtil.subStringCount(sm.whereSQL, "?");
 					appendWhereSQL(value, params, count);
@@ -115,90 +117,33 @@ public abstract class BaseSearch{
 	
 	//未做参数个数验证，可能导致SQL错误
 	private void appendWhereSQL(Object value, List<Object> params, int count) {
-		if(value.getClass().isArray()) {
-        	for (int i = 0; i < count; i++) {
-        		params.add(Array.get(value, i));
-			}
-		}else if(value instanceof List) {
-			List<?> list = ((List<?>)value);
-        	for (int i = 0; i < count; i++) {
-        		params.add(list.get(i));
-			}
-		}else if(value instanceof Set) {
-			Set<?> set = ((Set<?>)value);
-			for (Object obj : set) {
-				params.add(obj);
-			}
-		}else {
-			if(value instanceof String) {
-				String[] values = value.toString().split(",");
-				if(values.length == count) {
-					for (int i = 0; i < count; i++) {
-						params.add(values[i]);
-					}
-					return;
+		if(value instanceof String) {
+			String[] values = value.toString().split(",");
+			if(values.length == count) {
+				for (int i = 0; i < count; i++) {
+					params.add(values[i]);
 				}
+				return;
 			}
-			for (int i = 0; i < count; i++) {
-				params.add(value);
-			}
+		}
+		for (int i = 0; i < count; i++) {
+			params.add(value);
 		}
 	}
 	
 	//未做参数个数验证，可能导致SQL错误
 	private void appendBetween(Object value, List<Object> params) {
-		if(value.getClass().isArray()) {
-        	params.add(Array.get(value, 0));
-        	params.add(Array.get(value, 1));
-		}else if(value instanceof List) {
-			List<?> list = ((List<?>)value);
-			params.add(list.get(0));
-        	params.add(list.get(1));
-		}else if(value instanceof Set) {
-			Set<?> set = ((Set<?>)value);
-			for (Object obj : set) {
-				params.add(obj);
-			}
-		}else{
-			String[] array = value.toString().split(",");
-			params.add(array[0]);
-			params.add(array[1]);
-		}
+		String[] array = value.toString().split(",");
+		params.add(array[0]);
+		params.add(array[1]);
 	}
 
 	private StringBuffer appendInOrNotIn(Object value, List<Object> params) {
 		StringBuffer question = new StringBuffer("(");
-		if(value.getClass().isArray()) {
-        	int length = Array.getLength(value);
-        	for (int i = 0; i < length; i++) {
-        		Object item = Array.get(value, i);
-				if(item != null) {
-					question.append("?,");
-					params.add(item);
-				}
-			}
-		}else if(value instanceof List) {
-			List<?> list = ((List<?>)value);
-			for (Object obj : list) {
-				if(obj != null) {
-					question.append("?,");
-					params.add(obj);
-				}
-			}
-		}else if(value instanceof Set) {
-			Set<?> set = ((Set<?>)value);
-			for (Object obj : set) {
-				if(obj != null) {
-					question.append("?,");
-					params.add(obj);
-				}
-			}
-		}else{
-			String[] array = value.toString().split(",");
-			for (String obj : array) {
-				question.append("?,");
-				params.add(obj);
-			}
+		String[] array = value.toString().split(",");
+		for (String item : array) {
+			question.append("?,");
+			params.add(item);
 		}
 		question.deleteCharAt(question.length()-1).append(')');
 		return question;
@@ -215,33 +160,33 @@ public abstract class BaseSearch{
 	
 	//判断一个Object是否为空
 	private static boolean isBlankObj(Object obj) {
-		if (obj == null)
-		    return true;
-		if(obj.getClass().isArray()) {
-			int length = Array.getLength(obj);
-			for (int i = 0; i < length; i++) {
-				Object item = Array.get(obj, i);
-					if(item != null && item.toString().trim().length() > 0) {
-						return false;
-					}
+        if (obj == null)
+            return true;
+        if(obj.getClass().isArray()) {
+        	int length = Array.getLength(obj);
+        	for (int i = 0; i < length; i++) {
+        		Object item = Array.get(obj, i);
+				if(item != null && item.toString().trim().length() > 0) {
+					return false;
 				}
-			return true;
-		}else if(obj instanceof Map) {
-			return ((Map<?,?>)obj).size() == 0;
-		}else if(obj instanceof Collection) {
-			return ((Collection<?>)obj).size() == 0;
-		}else {
-		    String str = obj.toString();
-		    int l = str.length();
-		    if (l > 0) {
-			for (int i = 0; i < l; i++) {
-			    if (!Character.isWhitespace(str.charAt(i))) {
-				return false;
-			    }
 			}
-		    }
-		    return true;
-		}
+        	return true;
+        }else if(obj instanceof Map) {
+        	return ((Map<?,?>)obj).size() == 0;
+        }else if(obj instanceof Collection) {
+        	return ((Collection<?>)obj).size() == 0;
+        }else {
+            String str = obj.toString();
+            int l = str.length();
+            if (l > 0) {
+                for (int i = 0; i < l; i++) {
+                    if (!Character.isWhitespace(str.charAt(i))) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
 	}
 	
 }
