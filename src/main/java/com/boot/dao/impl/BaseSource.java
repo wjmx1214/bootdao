@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 数据源类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.5
+ * @version 1.1.0
  */
 @Slf4j
 //装配基础配置类,spring上下文工具类,多数据源配置类,多数据源事务整合配置类
@@ -27,6 +27,8 @@ abstract class BaseSource{
 	private String dataSourceName;
 
 	private DataSource dataSource;
+	
+	protected BaseSourceType sourceType = BaseSourceType.mysql;
 	
 	@SuppressWarnings("unused")
 	private String transactionManagerName;
@@ -53,6 +55,18 @@ abstract class BaseSource{
 	protected DataSource getDataSource() throws SQLException{
 		if(dataSource == null) {
 			dataSource = ApplicationContextUtil.getBean(dataSourceName);
+			Connection conn = org.springframework.jdbc.datasource.DataSourceUtils.getConnection(dataSource);
+			String url = conn.getMetaData().getURL();
+			if(url.indexOf(":mysql:") > -1) {
+				sourceType = BaseSourceType.mysql;
+			}else if(url.indexOf(":oracle:") > -1) {
+				sourceType = BaseSourceType.oracle;
+			}else if(url.indexOf(":sqlserver:") > -1) {
+				sourceType = BaseSourceType.sqlserver;
+			}else if(url.indexOf(":clickhouse:") > -1) {
+				sourceType = BaseSourceType.clickhouse;
+			}
+			org.springframework.jdbc.datasource.DataSourceUtils.releaseConnection(conn, dataSource);
 		}
 		return dataSource;
 	}
@@ -66,7 +80,7 @@ abstract class BaseSource{
 		Connection conn = org.springframework.jdbc.datasource.DataSourceUtils.getConnection(this.getDataSource());
 		if(BaseDAOConfig.showSource) {
 			log.info(new StringBuffer("\n\n----- 当前DAO类型: ").append(this.getClass().getName())
-					.append("; 数据源: ").append(dataSource.getClass().getName() + "@" + Integer.toHexString(dataSource.hashCode()))
+					.append("; 数据源(").append(sourceType.toString()).append("): ").append(dataSource.getClass().getName() + "@" + Integer.toHexString(dataSource.hashCode()))
 					.append("; 数据源名称：").append(dataSourceName).append(" -----\n").append("----- 数据源详情: \n").append(dataSource)
 					.append("\n----- 当前Connection：").append(conn).append(" -----\n").toString());
 		}
