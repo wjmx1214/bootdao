@@ -119,17 +119,17 @@ public interface IBaseReadme {
 
 	调用示例：
 	public Page<StuDto> pageStu(StuSearch search){
-		search.SQL = "(select * from stu where 1=1 #{where1或任意标识}) union (select * from stu s where s.on_class=1 #{where2或任意标识})";
+		search.SQL = "(select * from stu where 1=1 #{search1或任意标识}) union (select * from stu s where s.on_class=1 #{search2或任意标识})";
 		return baseDAO.page(search, StuDto.class);
 		or
-		//search.appendWhere("select * from stu where 1=1 #{where}"); //单表分页查询全量字段可省略SQL
+		//search.appendWhere("select * from stu where 1=1 #{search}"); //单表分页查询全量字段可省略SQL
 		return baseDAO.page(search, StuDto.class);
 	}
 	public List<StuDto> listStu(StuSearch search){
-		search.appendWhere("select * from stu where 1=1 #{where}");
+		search.appendWhere("select * from stu where 1=1 #{search}");
 		return baseDAO.getEntitys(search.SQL, StuDto.class, search.params);
 		or
-		search.SQL = "select * from stu where 1=1 #{where}";
+		search.SQL = "select * from stu where 1=1 #{search}";
 		return baseDAO.getEntitys(search.appendWhere(), StuDto.class, search.params);
 	}
 </pre>
