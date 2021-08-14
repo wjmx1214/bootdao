@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * DAO映射缓存类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.6
+ * @version 1.1.0
  */
 @Slf4j
 public abstract class BaseMappingCache {
@@ -131,16 +131,27 @@ public abstract class BaseMappingCache {
 	//从类注解获取对应实体模板
 	private static Class<?> fromClassAnnotation(Class<?> clz) throws Exception {
 		if(clz.isAnnotationPresent(EntityPath.class)) {
-			EntityPath entityPath = clz.getAnnotation(EntityPath.class);
-			if(entityPath.value().length() > 0) {
-				if(entityPath.value().toLowerCase().equals("no entity")) {
+			EntityPath ep = clz.getAnnotation(EntityPath.class);
+			if(ep.value().length() > 0) {
+				if(ep.value().toLowerCase().equals("no entity")) {
 					return clz; //关闭自动匹配
 				}
-				try {
-					return Thread.currentThread().getContextClassLoader().loadClass(entityPath.value());
-				} catch (ClassNotFoundException e) {
-					throw new MappingException("未找到类[" + clz.getName() + "]对应的实体类, 请检查注解映射... "
-							+ "not found class [" + clz.getName() + "] mapping entity class, please check annotation mapping...");
+				if(ep.value().indexOf(".") == -1) {
+					//从已扫描的实体缓存中查找，未找到时抛出查找异常
+					for (Class<?> entityClz : tableMappingCache.keySet()) {
+						if(entityClz.getSimpleName().equals(ep.value())) {
+							return entityClz;
+						}
+					}
+					throw new MappingException("未找到类[" + clz.getName() + "]对应的实体类, 请检查注解映射内容或配置的包路径... "
+							+ "not found class [" + clz.getName() + "] mapping entity class, please check annotation mapping content or config package path...");
+				}else {
+					try {
+						return Thread.currentThread().getContextClassLoader().loadClass(ep.value());
+					} catch (ClassNotFoundException e) {
+						throw new MappingException("未找到类[" + clz.getName() + "]对应的实体类, 请检查注解映射内容... "
+								+ "not found class [" + clz.getName() + "] mapping entity class, please check annotation mapping content...");
+					}
 				}
 			}
 		}
@@ -151,10 +162,18 @@ public abstract class BaseMappingCache {
 	private static Class<?> fromConfig(Class<?> clz) throws Exception {
 		String className = clz.getSimpleName();
 		String differentName = getDifferentName(className);
+		String entityName = (differentName.length() == 0) ? className : className.substring(0, className.length() - differentName.length());
+
+		//先从已扫描的实体缓存中查找，未找到时再根据配置路径与类名进行查找
+		for (Class<?> entityClz : tableMappingCache.keySet()) {
+			if(entityClz.getSimpleName().equals(entityName)) {
+				return entityClz;
+			}
+		}
+
 		if(BaseDAOConfig.entityPaths == null) {
 			return null;
 		}
-		String entityName = (differentName.length() == 0) ? className : className.substring(0, className.length() - differentName.length());
 		for (String entityPath : BaseDAOConfig.entityPaths) {
 			try {
 				return Thread.currentThread().getContextClassLoader().loadClass(entityPath + "." + entityName);
