@@ -87,6 +87,7 @@ abstract class BaseTableMappingUtil {
 		}
 
 		createColumnMapping(clz, tm); //创建列映射
+		tm.entityMapping  = tm;	//不管自身是否为实体类，都赋值为自身
 		return tm;
 	}
 	
@@ -179,7 +180,9 @@ abstract class BaseTableMappingUtil {
 			}
 
 			columnName = columnName.toLowerCase();
-			if(isFindId) tm.idColumnName = columnName;
+			if(isFindId) {
+				tm.idColumnName = columnName;
+			}
 			f.setAccessible(true); //将字段设置为可强制访问
 
 			BaseColumnMapping cm = new BaseColumnMapping(columnName, f, saveMapping, createMapping, updateMapping, formatTime);
@@ -202,7 +205,7 @@ abstract class BaseTableMappingUtil {
 			tm = new BaseTableMapping();
 			tm.tableName = entityTm.tableName;
 			tm.isHump = entityTm.isHump;
-			tm.isEntity = false;
+			tm.entityMapping = entityTm;
 			tm.mappingType = entityTm.mappingType;
 			if(entityTm.createTime != null) {
 				tm.createTime = new BaseColumnMapping(entityTm.createTime.columnName, null, entityTm.createTime.saveMapping, entityTm.createTime.createMapping, entityTm.createTime.updateMapping, entityTm.createTime.formatTime);
