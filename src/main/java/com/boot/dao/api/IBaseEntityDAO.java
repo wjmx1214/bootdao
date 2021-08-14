@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * 实体封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.7
+ * @version 1.1.0
  */
 public interface IBaseEntityDAO extends IBaseJDBC{
 
@@ -201,7 +201,8 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> T findByUniqueColumn(String columnName, Object value, Class<T> clz);
 	
 	/**
-	 * 根据单个条件查找对象集合(属性名, 需要有对应的列名映射)
+	 * 根据单个条件查找对象集合(属性名, 需要有对应的列名映射)<br>
+	 * 多个参数需要用String类型并以逗号进行分隔
 	 * @param fieldName
 	 * @param value
 	 * @param searchType
@@ -211,7 +212,8 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> List<T> findByWhereField(String fieldName, Object value, SearchType searchType, Class<T> clz);
 	
 	/**
-	 * 根据单个条件查找对象集合(列名)
+	 * 根据单个条件查找对象集合(列名)<br>
+	 * 多个参数需要用String类型并以逗号进行分隔
 	 * @param columnName
 	 * @param value
 	 * @param searchType
@@ -243,7 +245,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> int updateColumnByPK(Serializable pk, Class<T> clz, String columnName, Object value) throws Exception;
 	
 	/**
-	 * 分页包装, 单表且无子查询可省略SQL(目前仅支持MYSQL)
+	 * 分页包装, 单表且无子查询可省略SQL(目前仅支持LIMIT)
 	 * @param search
 	 * @param clz
 	 * @return Page<T>
@@ -251,7 +253,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> Page<T> page(PageSearch search, Class<T> clz);
 	
 	/**
-	 * 分页包装(目前仅支持MYSQL)
+	 * 分页包装(目前仅支持LIMIT)
 	 * @param search
 	 * @return Page<Map<String, Object>>
 	 */
@@ -259,7 +261,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	Page<Map> pageMap(PageSearch search);
 
 	/**
-	 * 分页包装(目前仅支持MYSQL)
+	 * 分页包装(目前仅支持LIMIT)
 	 * @param pageIndex
 	 * @param pageSize
 	 * @param sql
@@ -270,7 +272,7 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> Page<T> page(int pageIndex, int pageSize, String sql, Class<T> clz, Object... params);
 	
 	/**
-	 * 分页包装(目前仅支持MYSQL)
+	 * 分页包装(目前仅支持LIMIT)
 	 * @param pageIndex
 	 * @param pageSize
 	 * @param sql
