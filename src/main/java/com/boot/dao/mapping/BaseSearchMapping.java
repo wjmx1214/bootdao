@@ -26,6 +26,7 @@ public class BaseSearchMapping {
 	public int index;				//条件索引(多表或子查询时, 若出现多处where, 则利用此索引进行区分)(默认=1, 即默认只有一处where)
 	public Sort sort;				//排序规则
 	public String whereSQL;			//自定义条件语句，用于复杂的条件判断
+	public String businessName;		//业务类型，用于多个业务共用同一个Search时，区分字段属于哪个业务
 	Field searchField;				//对应的Field
 
 	boolean isDate;					//是否为日期格式
