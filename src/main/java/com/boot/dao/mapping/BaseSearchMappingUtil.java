@@ -3,8 +3,8 @@ package com.boot.dao.mapping;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -51,16 +51,17 @@ abstract class BaseSearchMappingUtil {
 			sm = new BaseSearchMapping();
 			sm.searchType = search.value() != SearchType.eq ? search.value() : search.type();
 			sm.column = search.column();
-			sm.tableAs = search.tableAs();
-			sm.index = search.index();
 			if(sm.column.length() == 0) {
 				sm.column = search.isHump() ? BaseDAOUtil.humpToUnderline(field.getName()) : field.getName();
 			}
+			sm.tableAs = search.tableAs();
 			if(sm.tableAs.length() > 0) {
 				sm.tableAs += ".";
 			}
+			sm.index = search.index();
 			sm.sort = search.sort();
 			sm.whereSQL = search.whereSQL();
+			sm.businessName = search.businessName();
 			if(search.dateFormat().length() > 0) {
 				sm.formatTime = search.dateFormat();
 				sm.isDate = true;
@@ -73,6 +74,7 @@ abstract class BaseSearchMappingUtil {
 			sm.index = 1;
 			sm.sort = Sort.NOT;
 			sm.whereSQL = "";
+			sm.businessName = "";
 		}
 
 		//日期格式化
