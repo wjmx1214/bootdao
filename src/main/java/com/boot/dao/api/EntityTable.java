@@ -32,7 +32,7 @@ import org.springframework.core.annotation.AliasFor;
 public @interface EntityTable {  
 
 	/**
-	 * 表名
+	 * 表名<br>
 	 * 也可作用于，没有或未编写对应实体类，的非实体类配置，用于无SQL的API查询时映射表名<br>
 	 * 由于不配置时默会转换为小写表名，配置之后，可用以解决表名大小写敏感问题
 	 * @return String
@@ -41,7 +41,7 @@ public @interface EntityTable {
 	String table() default "";
 	
 	/**
-	 * 表名
+	 * 表名<br>
 	 * 也可作用于，没有或未编写对应实体类，的非实体类配置，用于无SQL的API查询时映射表名<br>
 	 * 由于不配置时默会转换为小写表名，配置之后，可用以解决表名大小写敏感问题
 	 * @return String
@@ -102,7 +102,8 @@ public @interface EntityTable {
 	
 	/**
 	 * <pre>
-	 * 时间字段格式化(未配置时默认以yyyy-MM-dd HH:mm:ss格式化)
+	 * 时间字段格式化
+	 * (未配置时默认以yyyy-MM-dd HH:mm:ss格式化)
 	 * 作用于以下两种场景：
 	 * 1.查询时映射格式(针对字符串类型时间字段)
 	 * 2.新增时映射格式(不限字段类型，但仅针对创建时间字段)
