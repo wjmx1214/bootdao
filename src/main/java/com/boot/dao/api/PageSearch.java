@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 多条件动态查询父类(分页)
+ * 多条件动态查询父类(分页)<br>
+ * 注意：若该Search类用于多个查询业务共用时，请设置业务类型<br>
+ * 正常情况下无需指定，主要用于区分字段属于哪个业务<br>
  * @author 2020-12-01 create wang.jia.le
  * @version 1.1.0
  */
@@ -33,21 +35,16 @@ public abstract class PageSearch extends BaseSearch{
 		super.clear();
 		this.countSQL = null;
 	}
-	
+
 	@Override
 	public final String appendWhere() {
-		return this.appendWhere(Integer.class); //由于函数多态问题，此处无法用null作为参数，后面使用时进行判断
-	}
-	
-	@Override
-	public final String appendWhere(Class<?> clz) {
 		if(super.append)
 			return super.SQL;
 		List<Object> params = new ArrayList<>();
 		List<String> qualifiers = super.findQualifier(SQL);
 		for (int i = 0; i < qualifiers.size(); i++) {
 			String qualifier = qualifiers.get(i);
-			String where = super.appendWhere(i+1, params, clz);
+			String where = super.appendWhere(i+1, params);
 			SQL = SQL.replace(qualifier, where);
 			if(countSQL != null) {
 				countSQL = countSQL.replace(qualifier, where);
@@ -57,7 +54,7 @@ public abstract class PageSearch extends BaseSearch{
 		super.append = true;
 		return super.SQL;
 	}
-	
+
 	/**
 	 * @param sql
 	 * @param countSQL 总记录SQL, 可以不用编写<br>
@@ -65,21 +62,11 @@ public abstract class PageSearch extends BaseSearch{
 	 * @return String
 	 */
 	public final String appendWhere(String sql, String countSQL) {
-		return this.appendWhere(Integer.class); //由于函数多态问题，此处无法用null作为参数，后面使用时进行判断
-	}
-	
-	/**
-	 * @param sql
-	 * @param countSQL 总记录SQL, 可以不用编写<br>
-	 * 但考虑到复杂SQL的性能问题, 此处保留自定义功能, 但查询条件须与SQL相同
-	 * @return String
-	 */
-	public final String appendWhere(String sql, String countSQL, Class<?> clz) {
 		if(super.append)
 			return super.SQL;
 		super.SQL = sql;
 		this.countSQL = countSQL;
-		return this.appendWhere(clz);
+		return this.appendWhere();
 	}
 
 	public int getPageIndex() {
