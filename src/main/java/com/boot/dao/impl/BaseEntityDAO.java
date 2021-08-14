@@ -501,7 +501,8 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 	
 	/**
-	 * 根据单个条件查找对象集合(属性名, 需要有对应的列名映射)
+	 * 根据单个条件查找对象集合(属性名, 需要有对应的列名映射)<br>
+	 * 多个参数需要用String类型并以逗号进行分隔
 	 * @param fieldName
 	 * @param value
 	 * @param searchType
@@ -515,7 +516,8 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 	
 	/**
-	 * 根据单个条件查找对象集合(列名)
+	 * 根据单个条件查找对象集合(列名)<br>
+	 * 多个参数需要用String类型并以逗号进行分隔
 	 * @param columnName
 	 * @param value
 	 * @param searchType
@@ -607,7 +609,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//-------------------------------------------------------- 分页查询 -------------------------------------------------------
 	
 	/**
-	 * 分页包装, 单表且无子查询可省略SQL(目前仅支持MYSQL)
+	 * 分页包装, 单表且无子查询可省略SQL(目前仅支持LIMIT)
 	 * @param search
 	 * @param clz
 	 * @return Page<T>
@@ -617,7 +619,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 	
 	/**
-	 * 分页包装(目前仅支持MYSQL)
+	 * 分页包装(目前仅支持LIMIT)
 	 * @param search
 	 * @return Page<Map<String, Object>>
 	 */
@@ -626,7 +628,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		return page(true, search, Map.class);
 	}
 	
-	//分页包装(目前仅支持MYSQL)
+	//分页包装(目前仅支持LIMIT)
 	@SuppressWarnings("unchecked")
 	private <T> Page<T> page(boolean isMap, PageSearch search, Class<T> clz){
 		if(!isMap && search.SQL == null) { //单表省略了SQL时
@@ -659,7 +661,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 	
 	/**
-	 * 分页包装(目前仅支持MYSQL)
+	 * 分页包装(目前仅支持LIMIT)
 	 * @param pageIndex
 	 * @param pageSize
 	 * @param sql
@@ -672,7 +674,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 	
 	/**
-	 * 分页包装(目前仅支持MYSQL)
+	 * 分页包装(目前仅支持LIMIT)
 	 * @param pageIndex
 	 * @param pageSize
 	 * @param sql
@@ -684,7 +686,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		return page(true, pageIndex, pageSize, sql, Map.class, params);
 	}
 	
-	//分页包装(目前仅支持MYSQL)
+	//分页包装(目前仅支持LIMIT)
 	@SuppressWarnings("unchecked")
 	private <T> Page<T> page(boolean isMap, int pageIndex, int pageSize, String sql, Class<T> clz, Object... params){
 		int count = this.getint(getCountSQL(sql), params);
