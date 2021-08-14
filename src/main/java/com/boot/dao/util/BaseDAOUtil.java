@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * DAO工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.7
+ * @version 1.1.0
  */
 public abstract class BaseDAOUtil {
 
@@ -159,7 +159,7 @@ public abstract class BaseDAOUtil {
 	
 
 	/**
-	 * 拼接分页语句, 仅限MYSQL
+	 * 拼接分页语句, 仅限LIMIT
 	 * @param index 当前页 从1开始
 	 * @param size 每页显示总数(若为0, 则代表不做分页)
 	 * @return String
