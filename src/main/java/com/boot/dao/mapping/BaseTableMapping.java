@@ -12,7 +12,7 @@ import com.boot.dao.util.BaseDAOLog;
 /**
  * 表映射
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.8
+ * @version 1.1.0
  */
 public class BaseTableMapping {
 
@@ -24,7 +24,7 @@ public class BaseTableMapping {
 	public BaseColumnMapping createTime;		//创建时间列映射(根据名称createTime或createDate推理)
 	public boolean hasCreateTime = false;		//是否有创建时间, 用于DTO、VO类型新增判断(新增记录时根据配置决定是否自动生成)
 	public boolean isHump = true;				//是否开启驼峰转换
-	public boolean isEntity = true;				//当前映射是否为Entity
+	public BaseTableMapping entityMapping;		//当前映射的实体映射，该值可能为实体映射，也可能为自身映射
 	public int mappingType = 0;					//当前实际的注解方式(没有或未知ID注解=0, EntityTable=1, mybatis-plus=2, JPA=3)(=0时仅支持SQL查询)
 
 	public Map<String, BaseColumnMapping> columnMappings = new HashMap<>(); //列映射集合(列名称:列映射)
@@ -49,33 +49,33 @@ public class BaseTableMapping {
 
 	//判断一个Object是否为空
 	private static boolean isBlankObj(Object obj) {
-		if (obj == null)
-		    return true;
-		if(obj.getClass().isArray()) {
-			int length = Array.getLength(obj);
-			for (int i = 0; i < length; i++) {
-				Object item = Array.get(obj, i);
-					if(item != null && item.toString().trim().length() > 0) {
-						return false;
-					}
+        if (obj == null)
+            return true;
+        if(obj.getClass().isArray()) {
+        	int length = Array.getLength(obj);
+        	for (int i = 0; i < length; i++) {
+        		Object item = Array.get(obj, i);
+				if(item != null && item.toString().trim().length() > 0) {
+					return false;
 				}
-			return true;
-		}else if(obj instanceof Map) {
-			return ((Map<?,?>)obj).size() == 0;
-		}else if(obj instanceof Collection) {
-			return ((Collection<?>)obj).size() == 0;
-		}else {
-		    String str = obj.toString();
-		    int l = str.length();
-		    if (l > 0) {
-			for (int i = 0; i < l; i++) {
-			    if (!Character.isWhitespace(str.charAt(i))) {
-				return false;
-			    }
 			}
-		    }
-		    return true;
-		}
+        	return true;
+        }else if(obj instanceof Map) {
+        	return ((Map<?,?>)obj).size() == 0;
+        }else if(obj instanceof Collection) {
+        	return ((Collection<?>)obj).size() == 0;
+        }else {
+            String str = obj.toString();
+            int l = str.length();
+            if (l > 0) {
+                for (int i = 0; i < l; i++) {
+                    if (!Character.isWhitespace(str.charAt(i))) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
 	}
 
 }
