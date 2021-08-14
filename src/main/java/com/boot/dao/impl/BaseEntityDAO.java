@@ -707,31 +707,76 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 	
 	private static String getCountSQL(String sql) {
-		String countSQL = sql.replace(findSelectFromSQL(sql), "count(1)");
-		String orderBySQL = findOrderBySQL(countSQL);
-		if(orderBySQL != null) {
+		String countSQL = sql;
+		String selectFromSQL = findSelectFromSQLGreedy(countSQL);
+		String selectFrom = findSelectFrom(selectFromSQL);
+		if(selectFrom != null && selectFrom.length() == 5) {
+			List<String> list = findSelectFromSQL(countSQL);
+			for (String str : list) {
+				countSQL = countSQL.replace(str, " count(1) ");
+			}
+		}else {
+			countSQL = countSQL.replace(selectFromSQL, " count(1) ");
+		}
+		List<String> orderBySQLs = findOrderBySQL(countSQL);
+		for (String orderBySQL : orderBySQLs) {
 			countSQL = countSQL.replace(orderBySQL, "");
 		}
 		return countSQL;
 	}
 	
-	private static String findOrderBySQL(String sql) {
-		String m = "\\s(?i)(order by)\\s+(.*)";
+	private static String findSelectFromSQLGreedy(String sql) {
+		String m = "(?i)(select)\\s+(.*)\\s(?i)(from)";
 		Matcher matcher = Pattern.compile(m).matcher(sql);
 		while (matcher.find()) {
-			String orderBySQL = findOrderBySQL(matcher.group().substring(10, matcher.group().length()));
-			return (orderBySQL != null) ? orderBySQL : matcher.group();
+			return matcher.group().substring(6, matcher.group().length() - 4);
 		}
 		return null;
 	}
 	
-	private static String findSelectFromSQL(String sql) {
-		String m = "^(?i)(select)\\s+(.*)\\s(?i)(from)";
+	private static List<String> findSelectFromSQL(String sql) {
+		String m = "(?i)(select)\\s+(.*?)\\s(?i)(from)";
+		Matcher matcher = Pattern.compile(m).matcher(sql);
+		List<String> list = new ArrayList<>();
+		while (matcher.find()) {
+			list.add(matcher.group().substring(6, matcher.group().length() - 4));
+		}
+		return list;
+	}
+	
+	private static String findSelectFrom(String sql) {
+		String m = "(?i)(select|from)\\s";
 		Matcher matcher = Pattern.compile(m).matcher(sql);
 		while (matcher.find()) {
-			return matcher.group().substring(7, matcher.group().length() - 5);
+			return matcher.group();
 		}
 		return null;
 	}
 	
+	private static List<String> findOrderBySQL(String sql) {
+		List<String> list = new ArrayList<>();
+		String m = "\\s?(?i)(order by)\\s+(.*?)\\)";
+		Matcher matcher = Pattern.compile(m).matcher(sql);
+		while (matcher.find()) {
+			list.add(matcher.group().substring(0, matcher.group().length() - 1));
+		}
+		m = "\\s?(?i)(order by)\\s+(.*?)";
+		matcher = Pattern.compile(m).matcher(sql);
+		String temp = null;
+		while (matcher.find()) {
+			temp = matcher.group();
+		}
+		if(temp != null) {
+			int index = sql.lastIndexOf(temp);
+			temp = sql.substring(index, sql.length());
+			for (String str : list) {
+				if(temp.indexOf(str) == 0) {
+					return list;
+				}
+			}
+			list.add(temp);
+		}
+		return list;
+	}
+
 }
