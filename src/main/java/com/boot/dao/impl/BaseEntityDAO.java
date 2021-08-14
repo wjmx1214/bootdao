@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.data.mapping.MappingException;
 
@@ -631,9 +633,9 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 			BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
 			search.SQL = "select * from " + tm.tableName + " where 1=1#{where}";
 		}
-		search.appendWhere(clz);
+		search.appendWhere();
 		if(search.countSQL == null) {
-			search.countSQL = "SELECT count(1) AS count FROM (#{SQL}) AS count_auto".replace("#{SQL}", search.SQL);
+			search.countSQL = getCountSQL(search.SQL);
 		}
 		int count = this.getint(search.countSQL, search.params);
 		String dataSql = search.SQL + BaseDAOUtil.appendPage(search.pageIndex, search.pageSize);
@@ -685,8 +687,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//分页包装(目前仅支持MYSQL)
 	@SuppressWarnings("unchecked")
 	private <T> Page<T> page(boolean isMap, int pageIndex, int pageSize, String sql, Class<T> clz, Object... params){
-		String countSql = "SELECT count(1) AS count FROM (#{SQL}) AS count_auto".replace("#{SQL}", sql);
-		int count = this.getint(countSql, params);
+		int count = this.getint(getCountSQL(sql), params);
 		String dataSql = sql + BaseDAOUtil.appendPage(pageIndex, pageSize);
 		List<T> list = isMap ? (List<T>) super.getMaps(dataSql, params) : super.getEntitys(dataSql, clz, params);
 		boolean pageIndexChange = false;
@@ -703,6 +704,34 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		Page<T> page = new Page<>(pageIndex, pageSize, count, list);
 		page.setPageIndexChange(pageIndexChange);
 		return page;
+	}
+	
+	private static String getCountSQL(String sql) {
+		String countSQL = sql.replace(findSelectFromSQL(sql), "count(1)");
+		String orderBySQL = findOrderBySQL(countSQL);
+		if(orderBySQL != null) {
+			countSQL = countSQL.replace(orderBySQL, "");
+		}
+		return countSQL;
+	}
+	
+	private static String findOrderBySQL(String sql) {
+		String m = "\\s(?i)(order by)\\s+(.*)";
+		Matcher matcher = Pattern.compile(m).matcher(sql);
+		while (matcher.find()) {
+			String orderBySQL = findOrderBySQL(matcher.group().substring(10, matcher.group().length()));
+			return (orderBySQL != null) ? orderBySQL : matcher.group();
+		}
+		return null;
+	}
+	
+	private static String findSelectFromSQL(String sql) {
+		String m = "^(?i)(select)\\s+(.*)\\s(?i)(from)";
+		Matcher matcher = Pattern.compile(m).matcher(sql);
+		while (matcher.find()) {
+			return matcher.group().substring(7, matcher.group().length() - 5);
+		}
+		return null;
 	}
 	
 }
