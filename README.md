@@ -29,7 +29,7 @@
 	 <dependency>
         <groupId>com.bootdao</groupId>
         <artifactId>bootdao-spring-boot-starter</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </dependency>
 
  yml配置(选配)：
@@ -85,7 +85,7 @@
  调用示例：
 
 	public Page<StuDto> pageStu(StuSearch search){
-		search.SQL = "(select * from stu where 1=1 #{search1或任意标识}) union (select * from stu s where s.on_class=1 #{search2或任意标识})";
+		search.SQL = "(select * from stu where 1=1 #{search或任意标识}) union (select * from stu s where s.on_class=1 #{search2})";
 		return baseDAO.page(search, StuDto.class);
 		or
 		//search.appendWhere("select * from stu where 1=1 #{search}"); //单表分页查询全量字段可省略SQL
