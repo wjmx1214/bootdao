@@ -3,6 +3,8 @@ package com.boot.dao.api;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -16,7 +18,7 @@ import com.boot.dao.mapping.BaseSearchMapping;
  * 注意：若该Search类用于多个查询业务共用时，请设置业务类型<br>
  * 正常情况下无需指定，主要用于区分字段属于哪个业务<br>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.0
+ * @version 1.1.1
  */
 public abstract class BaseSearch{
 
@@ -36,15 +38,7 @@ public abstract class BaseSearch{
 	}
 
 	public String appendWhere() {
-		if(this.append)
-			return this.SQL;
-		List<Object> params = new ArrayList<>();
-		List<String> qualifiers = this.findQualifier(SQL);
-		for (int i = 0; i < qualifiers.size(); i++) {
-			SQL = SQL.replace(qualifiers.get(i), this.appendWhere(i+1, params));
-		}
-		this.params = params.toArray();
-		this.append = true;
+		appendWhereAndParam(this.SQL, null);
 		return this.SQL;
 	}
 
@@ -55,7 +49,66 @@ public abstract class BaseSearch{
 		return this.appendWhere();
 	}
 	
-	String appendWhere(int index, List<Object> params) {
+	String appendWhereAndParam(String sql, String countSQL) {
+		if(this.append)
+			return countSQL;
+		this.SQL = this.SQL.replace("\n", " ");
+		if(countSQL != null) {
+			countSQL = countSQL.replace("\n", " ");
+		}
+		
+		List<Object> paramsList = new ArrayList<>();
+		Map<String, List<Object>> paramsMap = new LinkedHashMap<>();
+		Map<String, String> whereKeys = findWhereKey();
+		List<String> qualifiers = this.findQualifier(SQL);
+		for (String qualifier : qualifiers) {
+			String whereKey = qualifier.trim();
+			whereKey = whereKeys.get(whereKey.substring(2, whereKey.length() - 1));
+			whereKey = whereKey == null ? "default_search" : whereKey;
+			String where = this.appendWhereAndParam(whereKey, paramsList, paramsMap);
+			if(where != null) {
+				SQL = SQL.replace(qualifier, where);
+				if(countSQL != null) {
+					countSQL = countSQL.replace(qualifier, where);
+				}
+			}
+		}
+		this.params = paramsList.toArray();
+		this.append = true;
+		return countSQL;
+	}
+	
+	private Map<String, String> findWhereKey() {
+		Map<String, String> map = new HashMap<>();
+		List<BaseSearchMapping> sms = BaseMappingCache.getSearchMapping(this.getClass());
+		for (BaseSearchMapping sm : sms) {
+			if(sm.whereKey.length() > 0) {
+				map.put(sm.whereKey, sm.whereKey);
+			}
+		}
+		return map;
+	}
+	
+	private List<String> findQualifier(String str) {
+		List<String> list = new ArrayList<>();
+		Matcher matcher = Pattern.compile("(\\s*#\\{.*?\\})").matcher(str); //prefix = "#"
+		while (matcher.find()) {
+			list.add(matcher.group());
+		}
+		return list;
+	}
+	
+	private String appendWhereAndParam(String whereKey, List<Object> paramsList, Map<String, List<Object>> paramsMap) {
+		List<Object> params = paramsMap.get(whereKey);
+		if(params == null) {
+			params = new ArrayList<>();
+		}else {
+			for (Object param : params) {
+				paramsList.add(param);
+			}
+			return null;
+		}
+		
 		StringBuffer sort = new StringBuffer();
 		StringBuffer where = new StringBuffer();
 		List<BaseSearchMapping> sms = BaseMappingCache.getSearchMapping(this.getClass());
@@ -64,7 +117,7 @@ public abstract class BaseSearch{
 				continue; //该字段不属于本次业务查询；用于多个业务共用XxxSearch类时，过滤非当前业务的列
 			}
 			
-			if(sm.index == index) {
+			if("default_search".equals(whereKey) && sm.whereKey.length() == 0 || sm.whereKey.equals(whereKey)) {
 				if(sm.sort != Sort.NOT) {
 					sort.append((sort.length() == 0) ? " order by " : ", ");
 					sort.append(sm.tableAs).append(sm.column).append(" ").append(sm.sort.sort);
@@ -103,7 +156,15 @@ public abstract class BaseSearch{
 				}
 			}
 		}
-		return where.append(sort).toString();
+		String whereStr = where.append(sort).toString();
+		if(whereStr.length() > 0) {
+			for (Object param : params) {
+				paramsList.add(param);
+			}
+			paramsMap.put(whereKey, params);
+			return whereStr;
+		}
+		return null;
 	}
 
 	//未做参数个数验证，可能导致SQL错误
@@ -169,15 +230,6 @@ public abstract class BaseSearch{
 		}else if(searchType == SearchType.like_all) {
 			params.add("%" + value + "%");
 		}
-	}
-	
-	List<String> findQualifier(String str) {
-		List<String> list = new ArrayList<>();
-		Matcher matcher = Pattern.compile("(\\s*#\\{.*?\\})").matcher(str); //prefix = "#"
-		while (matcher.find()) {
-			list.add(matcher.group(1));
-		}
-		return list;
 	}
 	
 	//判断一个Object是否为空
