@@ -78,7 +78,7 @@
 		private Long id;
 		+@Search(column="stu_name", type=SearchType.like_right)
 		private String name;
-		+@Search(column="stu_name", type=SearchType.like_all, tableAs="s", index=2)
+		+@Search(column="stu_name", type=SearchType.like_all, tableAs="s", whereKey="search2")
 		private String name2;
 	}
 
