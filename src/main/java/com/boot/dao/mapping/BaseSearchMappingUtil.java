@@ -18,7 +18,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 多条件动态查询映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.0
+ * @version 1.1.1
  */
 abstract class BaseSearchMappingUtil {
 
@@ -58,9 +58,9 @@ abstract class BaseSearchMappingUtil {
 			if(sm.tableAs.length() > 0) {
 				sm.tableAs += ".";
 			}
-			sm.index = search.index();
+			sm.whereKey = search.whereKey();
 			sm.sort = search.sort();
-			sm.whereSQL = search.whereSQL();
+			sm.whereSQL = search.whereSQL().replace("\n", " ");
 			sm.businessName = search.businessName();
 			if(search.dateFormat().length() > 0) {
 				sm.formatTime = search.dateFormat();
@@ -71,7 +71,7 @@ abstract class BaseSearchMappingUtil {
 			sm.searchType = SearchType.eq;
 			sm.column = BaseDAOUtil.humpToUnderline(field.getName());
 			sm.tableAs = "";
-			sm.index = 1;
+			sm.whereKey = "";
 			sm.sort = Sort.NOT;
 			sm.whereSQL = "";
 			sm.businessName = "";
