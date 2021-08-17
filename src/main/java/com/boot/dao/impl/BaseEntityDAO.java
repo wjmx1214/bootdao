@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.springframework.data.mapping.MappingException;
 
@@ -25,7 +23,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.0
+ * @version 1.1.1
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -637,7 +635,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		}
 		search.appendWhere();
 		if(search.countSQL == null) {
-			search.countSQL = getCountSQL(search.SQL);
+			search.countSQL = PageSearch.getCountSQL(search.SQL);
 		}
 		int count = this.getint(search.countSQL, search.params);
 		String dataSql = search.SQL + BaseDAOUtil.appendPage(search.pageIndex, search.pageSize);
@@ -689,7 +687,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//分页包装(目前仅支持LIMIT)
 	@SuppressWarnings("unchecked")
 	private <T> Page<T> page(boolean isMap, int pageIndex, int pageSize, String sql, Class<T> clz, Object... params){
-		int count = this.getint(getCountSQL(sql), params);
+		int count = this.getint(PageSearch.getCountSQL(sql), params);
 		String dataSql = sql + BaseDAOUtil.appendPage(pageIndex, pageSize);
 		List<T> list = isMap ? (List<T>) super.getMaps(dataSql, params) : super.getEntitys(dataSql, clz, params);
 		boolean pageIndexChange = false;
@@ -706,79 +704,6 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		Page<T> page = new Page<>(pageIndex, pageSize, count, list);
 		page.setPageIndexChange(pageIndexChange);
 		return page;
-	}
-	
-	private static String getCountSQL(String sql) {
-		String countSQL = sql;
-		String selectFromSQL = findSelectFromSQLGreedy(countSQL);
-		String selectFrom = findSelectFrom(selectFromSQL);
-		if(selectFrom != null && selectFrom.length() == 5) {
-			List<String> list = findSelectFromSQL(countSQL);
-			for (String str : list) {
-				countSQL = countSQL.replace(str, " count(1) ");
-			}
-		}else {
-			countSQL = countSQL.replace(selectFromSQL, " count(1) ");
-		}
-		List<String> orderBySQLs = findOrderBySQL(countSQL);
-		for (String orderBySQL : orderBySQLs) {
-			countSQL = countSQL.replace(orderBySQL, "");
-		}
-		return countSQL;
-	}
-	
-	private static String findSelectFromSQLGreedy(String sql) {
-		String m = "(?i)(select)\\s+(.*)\\s(?i)(from)";
-		Matcher matcher = Pattern.compile(m).matcher(sql);
-		while (matcher.find()) {
-			return matcher.group().substring(6, matcher.group().length() - 4);
-		}
-		return null;
-	}
-	
-	private static List<String> findSelectFromSQL(String sql) {
-		String m = "(?i)(select)\\s+(.*?)\\s(?i)(from)";
-		Matcher matcher = Pattern.compile(m).matcher(sql);
-		List<String> list = new ArrayList<>();
-		while (matcher.find()) {
-			list.add(matcher.group().substring(6, matcher.group().length() - 4));
-		}
-		return list;
-	}
-	
-	private static String findSelectFrom(String sql) {
-		String m = "(?i)(select|from)\\s";
-		Matcher matcher = Pattern.compile(m).matcher(sql);
-		while (matcher.find()) {
-			return matcher.group();
-		}
-		return null;
-	}
-	
-	private static List<String> findOrderBySQL(String sql) {
-		List<String> list = new ArrayList<>();
-		String m = "\\s?(?i)(order by)\\s+(.*?)\\)";
-		Matcher matcher = Pattern.compile(m).matcher(sql);
-		while (matcher.find()) {
-			list.add(matcher.group().substring(0, matcher.group().length() - 1));
-		}
-		m = "\\s?(?i)(order by)\\s+(.*?)";
-		matcher = Pattern.compile(m).matcher(sql);
-		String temp = null;
-		while (matcher.find()) {
-			temp = matcher.group();
-		}
-		if(temp != null) {
-			int index = sql.lastIndexOf(temp);
-			temp = sql.substring(index, sql.length());
-			for (String str : list) {
-				if(temp.indexOf(str) == 0) {
-					return list;
-				}
-			}
-			list.add(temp);
-		}
-		return list;
 	}
 
 }
