@@ -18,7 +18,7 @@ import org.springframework.core.annotation.AliasFor;
 		+@Search(column="stu_name", type=SearchType.like_right)
 		private String name;
 
-		+@Search(column="stu_name", type=SearchType.like_all, tableAs="s", index=2)
+		+@Search(column="stu_name", type=SearchType.like_all, tableAs="s", whereKey="search2")
 		private String name2;
 		
 		+@Search(column="stu_age", sort=Sort.DESC)
@@ -35,7 +35,7 @@ import org.springframework.core.annotation.AliasFor;
 
 	调用示例：
 	public Page<StuDto> pageStu(StuSearch search){
-		search.SQL = "(select * from stu where 1=1 #{search1或任意标识}) union (select * from stu s where s.on_class=1 #{search2或任意标识})";
+		search.SQL = "(select * from stu where 1=1 #{search或任意标识}) union (select * from stu s where s.on_class=1 #{search2})";
 		return baseDAO.page(search, StuDto.class);
 
 		or
@@ -55,7 +55,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.1.0
+	@version 1.1.1
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target(ElementType.FIELD) 						// 定义注解的作用目标(类，常量，字段，方法等)
@@ -94,14 +94,6 @@ public @interface Search {
 	 * @return boolean
 	 */
 	boolean isHump() default true;
-
-	/**
-	 * 条件索引<br>
-	 * 多表或子查询时, 若出现多处where或having, 则利用此索引进行区分, 按阅读顺序<br>
-	 * 默认=1, 即默认只有一处where
-	 * @return int
-	 */
-	int index() default 1;
 	
 	/**
 	 * 是否排序<br>
@@ -111,6 +103,14 @@ public @interface Search {
 	 * @return Sort
 	 */
 	Sort sort() default Sort.NOT;
+
+	/**
+	 * 多处不同where条件定位标识<br>
+	 * 多表或子查询时, 若出现多处where或having, 则利用此标识进行区分<br>
+	 * 默认为空, 即默认只有一处where
+	 * @return String
+	 */
+	String whereKey() default "";
 	
 	/**
 	 * 自定义条件语句<br>
