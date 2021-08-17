@@ -3,7 +3,7 @@ package com.boot.dao.api;
 /**
  * 使用示例与详细描述请查看readme()
  * @author 2020-12-01 create wang.jia.le	email	wjmx1214@sina.com
- * @version 1.1.0
+ * @version 1.1.1
  */
 public interface IBaseReadme {
 
@@ -32,7 +32,7 @@ public interface IBaseReadme {
 	 <dependency>
 	    <groupId>com.bootdao</groupId>
 	    <artifactId>bootdao-spring-boot-starter</artifactId>
-	    <version>1.1.0</version>
+	    <version>1.1.1</version>
 	</dependency>
 
 
@@ -119,7 +119,7 @@ public interface IBaseReadme {
 
 	调用示例：
 	public Page<StuDto> pageStu(StuSearch search){
-		search.SQL = "(select * from stu where 1=1 #{search1或任意标识}) union (select * from stu s where s.on_class=1 #{search2或任意标识})";
+		search.SQL = "(select * from stu where 1=1 #{search或任意标识}) union (select * from stu s where s.on_class=1 #{search2})";
 		return baseDAO.page(search, StuDto.class);
 		or
 		//search.appendWhere("select * from stu where 1=1 #{search}"); //单表分页查询全量字段可省略SQL
