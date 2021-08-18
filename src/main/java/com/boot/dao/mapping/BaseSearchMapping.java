@@ -1,7 +1,7 @@
 package com.boot.dao.mapping;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,7 +27,8 @@ public class BaseSearchMapping {
 	public String whereKey;			//多处不同where条件定位标识(多表或子查询时, 若出现多处where或having, 则利用此标识进行区分)(默认为空, 即默认只有一处where)
 	public String whereSQL;			//自定义条件语句，用于复杂的条件判断
 	public String businessName;		//业务类型，用于多个业务共用同一个Search时，区分字段属于哪个业务
-	Field searchField;				//对应的Field
+	Method getMethod;				//对应的get方法
+	String fieldName;				//对应的Field名称
 
 	boolean isDate;					//是否为日期格式
 	String formatTime = BaseDAOConfig.formatTime;	//当字段为日期类型时的格式化样式
@@ -43,13 +44,13 @@ public class BaseSearchMapping {
 
 	public Object searchFieldGet(Object search){
 		try {
-			Object value = searchField.get(search);
+			Object value = getMethod.invoke(search);
 			if(value != null) {
 				if(isDate) {
 					try {
 						return formatDateArray(value);
 					} catch (ParseException e) {
-						BaseDAOLog.printException("the Field(" + searchField.getName() + ") value(" + value.toString() + ") can't parse Date!", e);
+						BaseDAOLog.printException("the Field(" + fieldName + ") value(" + value.toString() + ") can't parse Date!", e);
 					} 
 				}else if(value.getClass().isArray() || value instanceof List || value instanceof Set) {
 					return arrayToString(value);
