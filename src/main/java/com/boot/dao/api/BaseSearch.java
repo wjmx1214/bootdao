@@ -66,11 +66,9 @@ public abstract class BaseSearch{
 			whereKey = whereKeys.get(whereKey.substring(2, whereKey.length() - 1));
 			whereKey = whereKey == null ? "default_search" : whereKey;
 			String where = this.appendWhereAndParam(whereKey, paramsList, paramsMap);
-			if(where != null) {
-				SQL = SQL.replace(qualifier, where);
-				if(countSQL != null) {
-					countSQL = countSQL.replace(qualifier, where);
-				}
+			SQL = SQL.replace(qualifier, where);
+			if(countSQL != null) {
+				countSQL = countSQL.replace(qualifier, where);
 			}
 		}
 		this.params = paramsList.toArray();
@@ -106,7 +104,7 @@ public abstract class BaseSearch{
 			for (Object param : params) {
 				paramsList.add(param);
 			}
-			return null;
+			return "";
 		}
 		
 		StringBuffer sort = new StringBuffer();
@@ -162,9 +160,8 @@ public abstract class BaseSearch{
 				paramsList.add(param);
 			}
 			paramsMap.put(whereKey, params);
-			return whereStr;
 		}
-		return null;
+		return whereStr;
 	}
 
 	//未做参数个数验证，可能导致SQL错误
