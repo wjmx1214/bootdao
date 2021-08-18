@@ -32,9 +32,11 @@ abstract class BaseSearchMappingUtil {
 
 			BaseSearchMapping sm = findMapping(field);
 			if(sm != null) {
-				field.setAccessible(true); //将字段设置为可强制访问
-				sm.searchField = field;
-				list.add(sm);
+				sm.fieldName = field.getName();
+				sm.getMethod = BaseDAOUtil.findGetMethod(clz, sm.fieldName);
+				if(sm.getMethod != null) {
+					list.add(sm);
+				}
 			}
 		}
 		return list;
