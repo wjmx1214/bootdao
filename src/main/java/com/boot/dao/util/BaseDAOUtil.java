@@ -62,7 +62,7 @@ public abstract class BaseDAOUtil {
 	private static Map<Class<?>, Field[]> classFieldCache = new ConcurrentHashMap<>();
 	
 	/**
-	 * 获取指定类型所有的属性(自身公有，私有，父类公有)
+	 * 获取指定类型所有的属性(自身公有，私有，父类公有, 直属父类私有)
 	 * @param clz
 	 * @return Field[]
 	 */
@@ -94,6 +94,24 @@ public abstract class BaseDAOUtil {
 			if(!exist){
 				f.setAccessible(true); // 强制访问
 				list.add(f);
+			}
+		}
+		if(clz.getSuperclass() != Object.class) {
+			Field[] fields3 = clz.getSuperclass().getDeclaredFields();
+			for(Field f : fields3){
+				if(Modifier.isFinal(f.getModifiers()) || Modifier.isStatic(f.getModifiers()))
+					continue;//当为final或static修饰时，则跳过
+				boolean exist = false;
+				for(Field f1 : list){
+					if(f.getName().equals(f1.getName())){
+						exist = true;
+						break;
+					}
+				}
+				if(!exist){
+					f.setAccessible(true); // 强制访问
+					list.add(f);
+				}
 			}
 		}
 		fields = list.toArray(new Field[]{});
