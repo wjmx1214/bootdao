@@ -31,7 +31,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.8
+ * @version 1.1.2
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
@@ -602,16 +602,24 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		//数值类型
 		else if(clz == Integer.class) {
 			String value = rs.getString(index);
-			a = (value == null) ? null : Integer.valueOf(value);
+			if(value != null && value.length() > 0) {
+				try {a = Integer.valueOf(value);}catch (Exception e) {}
+			}
 		}else if(clz == Long.class){
 			String value = rs.getString(index);
-			a = (value == null) ? null : Long.valueOf(value);
+			if(value != null && value.length() > 0) {
+				try {a = Long.valueOf(value);}catch (Exception e) {}
+			}
 		}else if(clz == Float.class){
 			String value = rs.getString(index);
-			a = (value == null) ? null : Float.valueOf(value);
+			if(value != null && value.length() > 0) {
+				try {a = Float.valueOf(value);}catch (Exception e) {}
+			}
 		}else if(clz == Double.class){
 			String value = rs.getString(index);
-			a = (value == null) ? null : Double.valueOf(value);
+			if(value != null && value.length() > 0) {
+				try {a = Double.valueOf(value);}catch (Exception e) {}
+			}
 		}else if(clz == int.class) {
 			a = rs.getInt(index);
 		}else if(clz == long.class){
@@ -643,15 +651,27 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		}
 		
 		//其它类型
-		else if(clz == Boolean.class || clz == boolean.class){
+		else if(clz == Boolean.class){
+			String value = rs.getString(index);
+			if(value != null && value.length() > 0) {
+				try {a = Long.valueOf(value) == 0 ? false : true;
+				}catch (Exception e) {
+					a = true;
+				}
+			}
+		}else if(clz == boolean.class){
 			a = rs.getBoolean(index);
-		}else if(clz == Byte[].class || clz == byte[].class){
+		}else if(clz == Byte[].class){
+			a = rs.getBytes(index);
+		}else if(clz == byte[].class){
 			a = rs.getBytes(index);
 		}else if(clz == BigDecimal.class){
 			a = rs.getBigDecimal(index);
 		}else if(clz == Short.class){
 			String value = rs.getString(index);
-			a = (value == null) ? null : Short.valueOf(value);
+			if(value != null && value.length() > 0) {
+				try {a = Short.valueOf(value);}catch (Exception e) {}
+			}
 		}else if(clz == short.class){
 			a = rs.getShort(index);
 		}else{
@@ -693,22 +713,22 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 	 * 判断一个Object是否为空 (true为空)
 	 */
 	protected boolean isBlankObj(Object obj) {
-        if (obj == null)
-            return true;
-        if(obj.getClass().isArray()) {
-        	int length = Array.getLength(obj);
-        	for (int i = 0; i < length; i++) {
-        		Object item = Array.get(obj, i);
-				if(item != null && item.toString().trim().length() > 0) {
+		if (obj == null)
+			return true;
+		if (obj.getClass().isArray()) {
+			int length = Array.getLength(obj);
+			for (int i = 0; i < length; i++) {
+				Object item = Array.get(obj, i);
+				if (item != null && item.toString().trim().length() > 0) {
 					return false;
 				}
 			}
-        	return true;
-        }else if(obj instanceof Map) {
-        	return ((Map<?,?>)obj).size() == 0;
-        }else if(obj instanceof Collection) {
-        	return ((Collection<?>)obj).size() == 0;
-        }
+			return true;
+		} else if (obj instanceof Map) {
+			return ((Map<?, ?>) obj).size() == 0;
+		} else if (obj instanceof Collection) {
+			return ((Collection<?>) obj).size() == 0;
+		}
 		return this.isBlank(obj.toString());
 	}
 
