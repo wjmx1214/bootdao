@@ -11,7 +11,7 @@ import com.boot.dao.util.SnowflakeIdWorker;
 /**
  * bootdao基础配置
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.0
+ * @version 1.1.2
  */
 @Configuration
 public class BaseDAOConfig {
@@ -23,6 +23,7 @@ public class BaseDAOConfig {
 	public static boolean showSource; 		//是否显示数据源相关信息, 主要用于调试(默认=false)
 	public static boolean autoCreateTime;	//当有创建时间字段时, 是否自动生成值(默认false)(根据名称createTime或createDate推理)(mysql5.x无法同时创建时间和更新时间自动配置, mysql8.x无问题)
 	public static String formatTime = "yyyy-MM-dd HH:mm:ss"; //时间类型默认格式化(具体参考EntityTable.formatTime描述)
+	public static String formatDate = "yyyy-MM-dd"; //日期类型默认格式化(具体参考EntityTable.formatTime描述)
 	public static SnowflakeIdWorker snowflakeIdWorker; //基于雪花算法的ID生成器
 	
 	@Value("${bootdao.entity-paths:#{null}}")
