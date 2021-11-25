@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * 注意：若该Search类用于多个查询业务共用时，请设置业务类型<br>
  * 正常情况下无需指定，主要用于区分字段属于哪个业务<br>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.1
+ * @version 1.1.2
  */
 public abstract class PageSearch extends BaseSearch{
 
@@ -77,6 +77,7 @@ public abstract class PageSearch extends BaseSearch{
 	}
 	
 	public static String getCountSQL(String sql) {
+		sql = sql.replace("\r\n", " ").replace("\n", " ").replace("\r", " ");
 		String countSQL = getBaseCountSQL(sql);
 		return getUnionCountSQL(countSQL);
 	}
