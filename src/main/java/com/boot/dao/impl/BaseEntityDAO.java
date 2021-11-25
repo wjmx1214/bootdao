@@ -23,7 +23,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.1
+ * @version 1.1.2
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -257,7 +257,11 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 				if(sql != null) {
 					if(tm.idAuto){ //自增
 						Long newId = super.insertAndGetId(sql, paramsList.toArray());
-						id = (tm.idField.getType() == Integer.class || tm.idField.getType() == int.class) ? newId.intValue() : newId;
+						if(tm.idField.getType() == Integer.class || tm.idField.getType() == int.class) {
+							id = newId.intValue();
+						}else {
+							id = newId;
+						}
 						tm.idFieldSet(t, id);
 					}else{
 						super.updateSQL(sql, paramsList.toArray());
@@ -631,7 +635,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	private <T> Page<T> page(boolean isMap, PageSearch search, Class<T> clz){
 		if(!isMap && search.SQL == null) { //单表省略了SQL时
 			BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
-			search.SQL = "select * from " + tm.tableName + " where 1=1#{where}";
+			search.SQL = "select * from " + tm.tableName + " where 1=1#{search}";
 		}
 		search.appendWhere();
 		if(search.countSQL == null) {
