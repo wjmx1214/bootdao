@@ -25,7 +25,7 @@ import org.springframework.core.annotation.AliasFor;
 		private Integer age;
 		
 		+@Search(type=SearchType.between, dateFormat="yyyy-MM-dd HH:mm:ss")
-		private String[] createDate;
+		private String[] createTime;
 		
 		+@DateTimeFormat(pattern="yyyy-MM-dd")
 		+@Search(type=SearchType.between)
@@ -55,7 +55,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.1.1
+	@version 1.1.2
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target(ElementType.FIELD) 						// 定义注解的作用目标(类，常量，字段，方法等)
