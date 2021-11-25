@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * DAO工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.1
+ * @version 1.1.2
  */
 public abstract class BaseDAOUtil {
 
@@ -167,7 +167,7 @@ public abstract class BaseDAOUtil {
         for (int i = 1; i < len; i++) {
         	char c0 = str.charAt(i - 1);
             char c = str.charAt(i);
-            if (Character.isUpperCase(c) && Character.isLowerCase(c0)) {
+            if (Character.isUpperCase(c) && (Character.isLowerCase(c0) || Character.isDigit(c0))) {
                 sb.append('_');
             }
             sb.append(Character.toLowerCase(c));
@@ -242,6 +242,11 @@ public abstract class BaseDAOUtil {
             num ++;
         }
         return num;
+    }
+    
+    public static void main(String[] args) {
+    	String str = BaseDAOUtil.humpToUnderline("repeatFaultCount7");
+    	System.out.println(str);
     }
 
 }
