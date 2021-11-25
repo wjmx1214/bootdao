@@ -4,8 +4,10 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.boot.dao.api.SearchType;
@@ -16,7 +18,7 @@ import com.boot.dao.util.BaseDAOLog;
 /**
  * 多条件动态查询映射
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.1
+ * @version 1.1.2
  */
 public class BaseSearchMapping {
 
@@ -48,12 +50,16 @@ public class BaseSearchMapping {
 			if(value != null) {
 				if(isDate) {
 					try {
-						return formatDateArray(value);
+						Object value1 = formatDateArray(value);
+						return isBlankObj(value1) ? null : value1;
 					} catch (ParseException e) {
 						BaseDAOLog.printException("the Field(" + fieldName + ") value(" + value.toString() + ") can't parse Date!", e);
 					} 
 				}else if(value.getClass().isArray() || value instanceof List || value instanceof Set) {
-					return arrayToString(value);
+					Object value1 =  arrayToString(value);
+					return isBlankObj(value1) ? null : value1;
+				}else if(isBlankObj(value)) {
+					value = null;
 				}
 			}
 			return value;
@@ -139,6 +145,37 @@ public class BaseSearchMapping {
 			return item.toString();
 		}
 		return null;
+	}
+	
+	// 判断一个Object是否为空
+	private static boolean isBlankObj(Object obj) {
+		if (obj == null)
+			return true;
+		if (obj.getClass().isArray()) {
+			int length = Array.getLength(obj);
+			for (int i = 0; i < length; i++) {
+				Object item = Array.get(obj, i);
+				if (item != null && item.toString().trim().length() > 0) {
+					return false;
+				}
+			}
+			return true;
+		} else if (obj instanceof Map) {
+			return ((Map<?, ?>) obj).size() == 0;
+		} else if (obj instanceof Collection) {
+			return ((Collection<?>) obj).size() == 0;
+		} else {
+			String str = obj.toString();
+			int l = str.length();
+			if (l > 0) {
+				for (int i = 0; i < l; i++) {
+					if (!Character.isWhitespace(str.charAt(i))) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
 	}
 
 }
