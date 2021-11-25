@@ -18,7 +18,7 @@ import com.boot.dao.mapping.BaseSearchMapping;
  * 注意：若该Search类用于多个查询业务共用时，请设置业务类型<br>
  * 正常情况下无需指定，主要用于区分字段属于哪个业务<br>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.1
+ * @version 1.1.2
  */
 public abstract class BaseSearch{
 
@@ -52,11 +52,6 @@ public abstract class BaseSearch{
 	String appendWhereAndParam(String sql, String countSQL) {
 		if(this.append)
 			return countSQL;
-		this.SQL = this.SQL.replace("\n", " ");
-		if(countSQL != null) {
-			countSQL = countSQL.replace("\n", " ");
-		}
-		
 		List<Object> paramsList = new ArrayList<>();
 		Map<String, List<Object>> paramsMap = new LinkedHashMap<>();
 		Map<String, String> whereKeys = findWhereKey();
@@ -200,12 +195,11 @@ public abstract class BaseSearch{
 			params.add(value);
 		}
 	}
-	
-	//未做参数个数验证，可能导致SQL错误
+
 	private void appendBetween(Object value, List<Object> params) {
 		String[] array = value.toString().split(",");
 		params.add(array[0]);
-		params.add(array[1]);
+		params.add(array.length > 1 ? array[1] : array[0]);
 	}
 
 	private StringBuffer appendInOrNotIn(Object value, List<Object> params) {
@@ -229,35 +223,35 @@ public abstract class BaseSearch{
 		}
 	}
 	
-	//判断一个Object是否为空
+	// 判断一个Object是否为空
 	private static boolean isBlankObj(Object obj) {
-        if (obj == null)
-            return true;
-        if(obj.getClass().isArray()) {
-        	int length = Array.getLength(obj);
-        	for (int i = 0; i < length; i++) {
-        		Object item = Array.get(obj, i);
-				if(item != null && item.toString().trim().length() > 0) {
+		if (obj == null)
+			return true;
+		if (obj.getClass().isArray()) {
+			int length = Array.getLength(obj);
+			for (int i = 0; i < length; i++) {
+				Object item = Array.get(obj, i);
+				if (item != null && item.toString().trim().length() > 0) {
 					return false;
 				}
 			}
-        	return true;
-        }else if(obj instanceof Map) {
-        	return ((Map<?,?>)obj).size() == 0;
-        }else if(obj instanceof Collection) {
-        	return ((Collection<?>)obj).size() == 0;
-        }else {
-            String str = obj.toString();
-            int l = str.length();
-            if (l > 0) {
-                for (int i = 0; i < l; i++) {
-                    if (!Character.isWhitespace(str.charAt(i))) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
+			return true;
+		} else if (obj instanceof Map) {
+			return ((Map<?, ?>) obj).size() == 0;
+		} else if (obj instanceof Collection) {
+			return ((Collection<?>) obj).size() == 0;
+		} else {
+			String str = obj.toString();
+			int l = str.length();
+			if (l > 0) {
+				for (int i = 0; i < l; i++) {
+					if (!Character.isWhitespace(str.charAt(i))) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
 	}
 	
 }
