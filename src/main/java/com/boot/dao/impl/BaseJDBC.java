@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -31,7 +32,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.2
+ * @version 1.1.3
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
@@ -632,7 +633,19 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
 		//时间类型
 		else if(clz == Date.class){
-			a = rs.getTimestamp(index);
+			try {
+				a = rs.getTimestamp(index);
+			}catch (Exception e) {
+				String value = rs.getString(index);
+				java.text.DateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd");
+				if(value != null) {
+					try {
+						a = df.parse(value);
+					} catch (ParseException e1) {
+						throw new SQLException("date parse exception: " + value);
+					}
+				}
+			}
 		}else if(clz == Timestamp.class){
 			a = rs.getTimestamp(index);
 		}else if(clz == java.sql.Date.class){
