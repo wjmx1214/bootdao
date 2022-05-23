@@ -13,7 +13,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 表映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.0
+ * @version 1.1.3
  */
 @SuppressWarnings("unchecked")
 abstract class BaseTableMappingUtil {
@@ -103,6 +103,8 @@ abstract class BaseTableMappingUtil {
 			boolean saveMapping = true; //是否开启保存映射
 			boolean createMapping = true; //是否开启新增映射
 			boolean updateMapping = true; //是否开启更新映射
+			boolean saveEmpty = false; //是否可保存空字符
+			boolean saveNull = false; //是否可保存null值
 			String formatTime = null;
 			boolean isHump = true; //是否开启驼峰转换
 			boolean isFindId = false; //是否找到ID映射
@@ -114,6 +116,8 @@ abstract class BaseTableMappingUtil {
 					saveMapping = et.saveMapping();
 					createMapping = et.createMapping();
 					updateMapping = et.updateMapping();
+					saveEmpty = et.saveEmpty();
+					saveNull = et.saveNull();
 					isHump = et.isHump();
 					formatTime = et.formatTime();
 					if(et.isId()){
@@ -185,7 +189,7 @@ abstract class BaseTableMappingUtil {
 			}
 			f.setAccessible(true); //将字段设置为可强制访问
 
-			BaseColumnMapping cm = new BaseColumnMapping(columnName, f, saveMapping, createMapping, updateMapping, formatTime);
+			BaseColumnMapping cm = new BaseColumnMapping(columnName, f, saveMapping, createMapping, updateMapping, saveEmpty, saveNull, formatTime);
 			tm.columnMappings.put(columnName, cm);
 			tm.fieldMappings.put(fieldName, cm);
 
@@ -208,7 +212,7 @@ abstract class BaseTableMappingUtil {
 			tm.entityMapping = entityTm;
 			tm.mappingType = entityTm.mappingType;
 			if(entityTm.createTime != null) {
-				tm.createTime = new BaseColumnMapping(entityTm.createTime.columnName, null, entityTm.createTime.saveMapping, entityTm.createTime.createMapping, entityTm.createTime.updateMapping, entityTm.createTime.formatTime);
+				tm.createTime = new BaseColumnMapping(entityTm.createTime.columnName, null, entityTm.createTime.saveMapping, entityTm.createTime.createMapping, entityTm.createTime.updateMapping, entityTm.createTime.saveEmpty, entityTm.createTime.saveNull, entityTm.createTime.formatTime);
 			}
 		}
 
@@ -232,13 +236,13 @@ abstract class BaseTableMappingUtil {
 						tm.hasCreateTime = true;
 					}
 				}
-				BaseColumnMapping cm = new BaseColumnMapping(entityCm.columnName, field, entityCm.saveMapping, entityCm.createMapping, entityCm.updateMapping, entityCm.formatTime);
+				BaseColumnMapping cm = new BaseColumnMapping(entityCm.columnName, field, entityCm.saveMapping, entityCm.createMapping, entityCm.updateMapping, entityCm.saveEmpty, entityCm.saveNull, entityCm.formatTime);
 				tm.columnMappings.put(cm.columnName, cm);
 				tm.fieldMappings.put(fieldName, cm);
 			}else { //本类字段仅作为查询映射
 				String columnName = BaseDAOUtil.humpToUnderline(fieldName);
 				if(entityTm.columnMappings.get(columnName) == null) {
-					BaseColumnMapping cm = new BaseColumnMapping(columnName, field, false, false, false);
+					BaseColumnMapping cm = new BaseColumnMapping(columnName, field, false, false, false, false, false);
 					tm.columnMappings.put(columnName, cm);
 					tm.fieldMappings.put(fieldName, cm);
 				}
