@@ -24,7 +24,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.1.0
+	@version 1.1.3
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target({ElementType.FIELD,ElementType.TYPE}) 	// 定义注解的作用目标(类，常量，字段，方法等)
@@ -63,10 +63,18 @@ public @interface EntityTable {
 	
 	/**
 	 * ID是否为自增(true=是)<br>
+	 * 当字段类型为String时自动生成UUID<br>
 	 * clickhouse数据库自动生成雪花算法ID
 	 * @return boolean
 	 */
 	boolean idAuto() default false;
+	
+	/**
+	 * 是否映射(true=映射)<br>
+	 * 屏蔽实体类字段与数据库字段的映射
+	 * @return boolean
+	 */
+	boolean isMapping() default true;
 	
 	/**
 	 * 是否开启保存映射(true=是)
@@ -87,11 +95,16 @@ public @interface EntityTable {
 	boolean updateMapping() default true;
 	
 	/**
-	 * 是否映射(true=映射)<br>
-	 * 屏蔽实体类字段与数据库字段的映射
+	 * 是否可保存空字符(true=保存, 默认false)
 	 * @return boolean
 	 */
-	boolean isMapping() default true;
+	boolean saveEmpty() default false;
+	
+	/**
+	 * 是否可保存null值(true=保存, 默认false)
+	 * @return boolean
+	 */
+	boolean saveNull() default false;
 	
 	/**
 	 * 是否开启驼峰转换(true=开启)<br>
