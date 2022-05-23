@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * DAO工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.2
+ * @version 1.1.3
  */
 public abstract class BaseDAOUtil {
 
@@ -146,7 +146,7 @@ public abstract class BaseDAOUtil {
 						ps.setObject(i+1, params[i]);
 					}
 				}else{
-					ps.setNull(i+1, Types.NUMERIC);
+					ps.setNull(i+1, Types.NULL);
 				}
 			}
 		}
@@ -242,11 +242,6 @@ public abstract class BaseDAOUtil {
             num ++;
         }
         return num;
-    }
-    
-    public static void main(String[] args) {
-    	String str = BaseDAOUtil.humpToUnderline("repeatFaultCount7");
-    	System.out.println(str);
     }
 
 }
