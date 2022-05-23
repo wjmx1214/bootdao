@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.context.annotation.Import;
 
+import com.boot.dao.api.BaseSearch;
 import com.boot.dao.api.IBaseEntityDAO;
 import com.boot.dao.api.Page;
 import com.boot.dao.api.PageSearch;
@@ -20,7 +21,7 @@ import com.boot.dao.util.BaseDAOLog;
  * 可指定一个带数据源的DAO来构造, 若未指定则默认为BaseDAO
  * @param <T>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.0
+ * @version 1.1.3
  */
 @Import(BaseDAO.class)
 public abstract class BaseTDAO<T>{
@@ -90,16 +91,6 @@ public abstract class BaseTDAO<T>{
 	 */
 	public T save(T t) throws Exception{
 		return DAO().save(t);
-	}
-
-	/**
-	 * 保存对象(新增或更新)(空字符更新)
-	 * @param t
-	 * @return <T>
-	 * @throws Exception
-	 */
-	public T save_empty(T t) throws Exception{
-		return DAO().save_empty(t);
 	}
 	
 	/**
@@ -230,7 +221,8 @@ public abstract class BaseTDAO<T>{
 	}
 
 	/**
-	 * 分页包装, 单表且无子查询可省略SQL(目前仅支持LIMIT)
+	 * 分页包装, 单表且无子查询可省略SQL<br>
+	 * 目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count
 	 * @param search
 	 * @return Page<T>
 	 */
@@ -239,13 +231,33 @@ public abstract class BaseTDAO<T>{
 	}
 	
 	/**
-	 * 分页包装(目前仅支持LIMIT)
+	 * 分页包装<br>
+	 * 目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count
 	 * @param search
 	 * @return Page<Map<String, Object>>
 	 */
 	@SuppressWarnings("rawtypes")
 	public Page<Map> pageMap(PageSearch search){
 		return DAO().pageMap(search);
+	}
+	
+	/**
+	 * 动态条件查询, 单表且无子查询可省略SQL<br>
+	 * @param search
+	 * @return List<T>
+	 */
+	public List<T> search(BaseSearch search){
+		return DAO().search(search, classT);
+	}
+	
+	/**
+	 * 动态条件查询<br>
+	 * @param search
+	 * @return List<Map<String, Object>>
+	 */
+	@SuppressWarnings("rawtypes")
+	public List<Map> searchMap(BaseSearch search){
+		return DAO().searchMap(search);
 	}
 
 }
