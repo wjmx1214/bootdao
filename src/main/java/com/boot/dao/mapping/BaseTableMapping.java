@@ -20,7 +20,7 @@ public class BaseTableMapping {
 	public String tableName = "";				//表名
 	public String idColumnName = "";			//ID列名
 	public Field idField;						//ID对应的Field
-	public boolean idAuto = false;				//ID是否为自增
+	public boolean idAuto = false;				//ID是否为自增, 当字段类型为String时自动生成UUID, clickhouse数据库自动生成雪花算法ID
 	public BaseColumnMapping createTime;		//创建时间列映射(根据名称createTime或createDate推理)
 	public boolean hasCreateTime = false;		//是否有创建时间, 用于DTO、VO类型新增判断(新增记录时根据配置决定是否自动生成)
 	public boolean isHump = true;				//是否开启驼峰转换
