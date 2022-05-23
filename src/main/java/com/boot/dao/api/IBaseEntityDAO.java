@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * 实体封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.0
+ * @version 1.1.3
  */
 public interface IBaseEntityDAO extends IBaseJDBC{
 
@@ -150,14 +150,6 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> T save(T t) throws Exception;
 	
 	/**
-	 * 新增或更新(空字符更新)
-	 * @param t
-	 * @return <T>
-	 * @throws Exception
-	 */
-	<T> T save_empty(T t) throws Exception;
-	
-	/**
 	 * 删除
 	 * @param t
 	 * @return boolean
@@ -245,7 +237,8 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> int updateColumnByPK(Serializable pk, Class<T> clz, String columnName, Object value) throws Exception;
 	
 	/**
-	 * 分页包装, 单表且无子查询可省略SQL(目前仅支持LIMIT)
+	 * 分页包装, 单表且无子查询可省略SQL<br>
+	 * 目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count
 	 * @param search
 	 * @param clz
 	 * @return Page<T>
@@ -253,7 +246,8 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> Page<T> page(PageSearch search, Class<T> clz);
 	
 	/**
-	 * 分页包装(目前仅支持LIMIT)
+	 * 分页包装<br>
+	 * 目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count
 	 * @param search
 	 * @return Page<Map<String, Object>>
 	 */
@@ -261,7 +255,8 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	Page<Map> pageMap(PageSearch search);
 
 	/**
-	 * 分页包装(目前仅支持LIMIT)
+	 * 分页包装<br>
+	 * 目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count
 	 * @param pageIndex
 	 * @param pageSize
 	 * @param sql
@@ -272,7 +267,8 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	<T> Page<T> page(int pageIndex, int pageSize, String sql, Class<T> clz, Object... params);
 	
 	/**
-	 * 分页包装(目前仅支持LIMIT)
+	 * 分页包装<br>
+	 * 目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count
 	 * @param pageIndex
 	 * @param pageSize
 	 * @param sql
@@ -281,5 +277,21 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 */
 	@SuppressWarnings("rawtypes")
 	Page<Map> pageMap(int pageIndex, int pageSize, String sql, Object... params);
+	
+	/**
+	 * 动态条件查询, 单表且无子查询可省略SQL<br>
+	 * @param search
+	 * @param clz
+	 * @return List<T>
+	 */
+	<T> List<T> search(BaseSearch search, Class<T> clz);
+	
+	/**
+	 * 动态条件查询<br>
+	 * @param search
+	 * @return List<Map<String, Object>>
+	 */
+	@SuppressWarnings("rawtypes")
+	List<Map> searchMap(BaseSearch search);
 	
 }
