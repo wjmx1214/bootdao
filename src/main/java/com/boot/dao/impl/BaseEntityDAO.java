@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.data.mapping.MappingException;
 
+import com.boot.dao.api.BaseSearch;
 import com.boot.dao.api.IBaseEntityDAO;
 import com.boot.dao.api.Page;
 import com.boot.dao.api.PageSearch;
@@ -23,7 +25,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.2
+ * @version 1.1.3
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -221,55 +223,46 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	 * @throws Exception
 	 */
 	@Override
-	public <T> T save(T t) throws Exception{
-		return this.save(t, false);
-	}
-
-	/**
-	 * 新增或更新(空字符更新)
-	 * @param t
-	 * @return <T>
-	 * @throws Exception
-	 */
-	@Override
-	public <T> T save_empty(T t) throws Exception{
-		return this.save(t, true);
-	}
-
-	//新增或更新
 	@SuppressWarnings("unchecked")
-	private <T> T save(T t, boolean empty) throws Exception{
+	public <T> T save(T t) throws Exception{
 		BaseTableMapping tm = this.getTableMapping(t);
 		Serializable id = tm.idFieldGet(t);
 		T old = (id == null) ? null : (T)this.findByUniqueColumn(tm.idColumnName, id, t.getClass(), tm.tableName);
 		List<Object> paramsList = new ArrayList<>();
+		boolean isBlank = isBlankObj(id);
 		if(old == null){ //新增
 			if(super.sourceType == BaseSourceType.clickhouse) {
-				if(tm.idAuto){ //自动生成
-					//id = UUID.randomUUID().toString().replaceAll("-","");
+				if(tm.idAuto && isBlank){ //自动生成
 					id = BaseDAOConfig.snowflakeIdWorker.nextId();
 				}
-				String sql = this.appendCreateSQLValues(t, tm, paramsList, empty, id);
+				String sql = this.appendCreateSQLValues(t, tm, paramsList, id);
 				super.updateSQL(sql, paramsList.toArray());
 				tm.idFieldSet(t, id);
 			}else {
-				String sql = this.appendCreateSQLValues(t, tm, paramsList, empty, id);
+				if(tm.idAuto && isBlank){ //自动生成
+					if(tm.idField.getType() == String.class) {
+						id = UUID.randomUUID().toString();//.replaceAll("-","");
+					}
+				}
+				String sql = this.appendCreateSQLValues(t, tm, paramsList, id);
 				if(sql != null) {
-					if(tm.idAuto){ //自增
-						Long newId = super.insertAndGetId(sql, paramsList.toArray());
-						if(tm.idField.getType() == Integer.class || tm.idField.getType() == int.class) {
-							id = newId.intValue();
-						}else {
-							id = newId;
+					if(tm.idAuto && isBlank){ //自增
+						if(tm.idField.getType() != String.class) {
+							Long newId = super.insertAndGetId(sql, paramsList.toArray());
+							if(tm.idField.getType() == Integer.class || tm.idField.getType() == int.class) {
+								id = newId.intValue();
+							}else {
+								id = newId;
+							}
+							tm.idFieldSet(t, id);
 						}
-						tm.idFieldSet(t, id);
 					}else{
 						super.updateSQL(sql, paramsList.toArray());
 					}
 				}
 			}
 		}else{ //更新
-			String sql = this.appendUpdateSQL(t, tm, paramsList, empty, id, old);
+			String sql = this.appendUpdateSQL(t, tm, paramsList, id, old);
 			if(sql != null) {
 				super.updateSQL(sql, paramsList.toArray());
 				t = BaseDAOUtil.copy(t, old);
@@ -279,21 +272,23 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 
 	//拼接SQL(新增)(values语法)
-	private <T> String appendCreateSQLValues(T t, BaseTableMapping tm, List<Object> paramsList, boolean empty, Serializable id) throws Exception{
+	private <T> String appendCreateSQLValues(T t, BaseTableMapping tm, List<Object> paramsList, Serializable id) throws Exception{
 		StringBuffer nameSQL = new StringBuffer();
 		StringBuffer paramSQL = new StringBuffer();
 		for (String columnName : tm.columnMappings.keySet()) {
 			BaseColumnMapping cm = tm.columnMappings.get(columnName);
+			if(cm.field == tm.idField)
+				continue;
 			if(cm.saveMapping && cm.createMapping) {
 				Object value = cm.field.get(t);
+				if(value != null && "null".equals(value.toString().toLowerCase()))
+					value = null;
 				if(value == null && BaseDAOConfig.autoCreateTime && tm.hasCreateTime){
 					if("createTime".equals(cm.field.getName()) || "createDate".equals(cm.field.getName())) {
 						value = super.formatDate(System.currentTimeMillis(), cm.formatTime); //当创建时间为空时，根据配置决定是否自动生成
 					}
 				}
-				if(value == null || cm.field == tm.idField || "null".equals(value.toString().toLowerCase()))
-					continue;
-				if( empty || !empty && !isBlankObj(value) ){
+				if(!isBlankObj(value) || cm.saveNull || cm.saveEmpty && value != null) {
 					nameSQL.append(columnName).append(",");
 					paramSQL.append("?,");
 					paramsList.add(value);
@@ -325,20 +320,22 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//拼接SQL(新增)
 	@SuppressWarnings("unused")
 	@Deprecated
-	private <T> String appendCreateSQL(T t, BaseTableMapping tm, List<Object> paramsList, boolean empty, Serializable id) throws Exception{
+	private <T> String appendCreateSQL(T t, BaseTableMapping tm, List<Object> paramsList, Serializable id) throws Exception{
 		StringBuffer setSQL = new StringBuffer();
 		for (String columnName : tm.columnMappings.keySet()) {
 			BaseColumnMapping cm = tm.columnMappings.get(columnName);
+			if(cm.field == tm.idField)
+				continue;
 			if(cm.saveMapping && cm.createMapping) {
 				Object value = cm.field.get(t);
+				if(value != null && "null".equals(value.toString().toLowerCase()))
+					value = null;
 				if(value == null && BaseDAOConfig.autoCreateTime && tm.hasCreateTime){
 					if("createTime".equals(cm.field.getName()) || "createDate".equals(cm.field.getName())) {
 						value = super.formatDate(System.currentTimeMillis(), cm.formatTime); //当创建时间为空时，根据配置决定是否自动生成
 					}
 				}
-				if(value == null || cm.field == tm.idField || "null".equals(value.toString().toLowerCase()))
-					continue;
-				if( empty || !empty && !isBlankObj(value) ){
+				if(!isBlankObj(value) || cm.saveNull || cm.saveEmpty && value != null) {
 					setSQL.append(columnName).append("=?,");
 					paramsList.add(value);
 				}
@@ -364,17 +361,21 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 
 	//拼接SQL(更新)
-	private <T> String appendUpdateSQL(T t, BaseTableMapping tm, List<Object> paramsList, boolean empty, Serializable id, T old) throws Exception{
+	private <T> String appendUpdateSQL(T t, BaseTableMapping tm, List<Object> paramsList, Serializable id, T old) throws Exception{
 		StringBuffer setSQL = new StringBuffer();
 		for (String columnName : tm.columnMappings.keySet()) {
 			BaseColumnMapping cm = tm.columnMappings.get(columnName);
+			if(cm.field == tm.idField)
+				continue;
 			if(cm.saveMapping && cm.updateMapping) {
 				Object value = cm.field.get(t);
-				if(value == null || value.equals(cm.field.get(old)) || cm.field == tm.idField || "null".equals(value.toString().toLowerCase()))
+				if(value != null && "null".equals(value.toString().toLowerCase()))
+					value = null;
+				if(value != null && value.equals(cm.field.get(old)))
 					continue;
 				if("createTime".equals(cm.field.getName()) || "createDate".equals(cm.field.getName()))
 					continue; //更新时发现有创建时间字段则跳过
-				if( empty || !empty && !isBlankObj(value) ){
+				if(!isBlankObj(value) || cm.saveNull || cm.saveEmpty && value != null) {
 					setSQL.append(columnName).append("=?,");
 					paramsList.add(value);
 				}
@@ -611,7 +612,8 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//-------------------------------------------------------- 分页查询 -------------------------------------------------------
 	
 	/**
-	 * 分页包装, 单表且无子查询可省略SQL(目前仅支持LIMIT)
+	 * 分页包装, 单表且无子查询可省略SQL<br>
+	 * 目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count
 	 * @param search
 	 * @param clz
 	 * @return Page<T>
@@ -621,7 +623,8 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 	
 	/**
-	 * 分页包装(目前仅支持LIMIT)
+	 * 分页包装<br>
+	 * 目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count
 	 * @param search
 	 * @return Page<Map<String, Object>>
 	 */
@@ -630,7 +633,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		return page(true, search, Map.class);
 	}
 	
-	//分页包装(目前仅支持LIMIT)
+	//分页包装(目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count)
 	@SuppressWarnings("unchecked")
 	private <T> Page<T> page(boolean isMap, PageSearch search, Class<T> clz){
 		if(!isMap && search.SQL == null) { //单表省略了SQL时
@@ -655,6 +658,9 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 			pageIndexChange = true; //分页索引已被重置
 			list = isMap ? (List<T>) super.getMaps(dataSql, search.params) : super.getEntitys(dataSql, clz, search.params);
 		}
+		if(search.pageSize < 1) {
+			search.pageSize = list.size();
+		}
 		Page<T> page = new Page<>(search.pageIndex, search.pageSize, count, list);
 		page.setPageIndexChange(pageIndexChange);
 		search.clear();
@@ -663,7 +669,8 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 	
 	/**
-	 * 分页包装(目前仅支持LIMIT)
+	 * 分页包装<br>
+	 * 目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count
 	 * @param pageIndex
 	 * @param pageSize
 	 * @param sql
@@ -676,7 +683,8 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 	
 	/**
-	 * 分页包装(目前仅支持LIMIT)
+	 * 分页包装<br>
+	 * 目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count
 	 * @param pageIndex
 	 * @param pageSize
 	 * @param sql
@@ -688,7 +696,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		return page(true, pageIndex, pageSize, sql, Map.class, params);
 	}
 	
-	//分页包装(目前仅支持LIMIT)
+	//分页包装(目前仅支持LIMIT, 若pageSize为0, 则代表不做分页, 且pageSize默认=总记录数count)
 	@SuppressWarnings("unchecked")
 	private <T> Page<T> page(boolean isMap, int pageIndex, int pageSize, String sql, Class<T> clz, Object... params){
 		int count = this.getint(PageSearch.getCountSQL(sql), params);
@@ -705,9 +713,47 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 			pageIndexChange = true; //分页索引已被重置
 			list = isMap ? (List<T>) super.getMaps(dataSql, params) : super.getEntitys(dataSql, clz, params);
 		}
+		if(pageSize < 1) {
+			pageSize = list.size();
+		}
 		Page<T> page = new Page<>(pageIndex, pageSize, count, list);
 		page.setPageIndexChange(pageIndexChange);
 		return page;
+	}
+	
+	//-------------------------------------------------------- 动态查询 -------------------------------------------------------
+	
+	/**
+	 * 动态条件查询, 单表且无子查询可省略SQL<br>
+	 * @param search
+	 * @param clz
+	 * @return List<T>
+	 */
+	public <T> List<T> search(BaseSearch search, Class<T> clz){
+		return search(Map.class.isAssignableFrom(clz), search, clz);
+	}
+	
+	/**
+	 * 动态条件查询<br>
+	 * @param search
+	 * @return List<Map<String, Object>>
+	 */
+	@SuppressWarnings("rawtypes")
+	public List<Map> searchMap(BaseSearch search){
+		return search(true, search, Map.class);
+	}
+	
+	//动态条件查询
+	@SuppressWarnings("unchecked")
+	private <T> List<T> search(boolean isMap, BaseSearch search, Class<T> clz){
+		if(!isMap && search.SQL == null) { //单表省略了SQL时
+			BaseTableMapping tm = BaseMappingCache.getTableMapping(clz);
+			search.SQL = "select * from " + tm.tableName + " where 1=1#{search}";
+		}
+		search.appendWhere();
+		List<T> list = isMap ? (List<T>) super.getMaps(search.SQL, search.params) : super.getEntitys(search.SQL, clz, search.params);
+		search.clear();
+		return list;
 	}
 
 }
