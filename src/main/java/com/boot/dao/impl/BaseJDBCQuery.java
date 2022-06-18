@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import com.boot.dao.config.BaseDAOConfig;
 import com.boot.dao.mapping.BaseColumnMapping;
 import com.boot.dao.mapping.BaseTableMapping;
@@ -17,7 +19,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 查询封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.4
+ * @version 1.1.4
  */
 class BaseJDBCQuery {
 	
@@ -85,10 +87,10 @@ class BaseJDBCQuery {
 			if(resultColumns != null) resultColumns = null;
 			if(rs != null) rs.close();
 			if(ps != null) ps.close();
-			if(conn != null && conn.getAutoCommit()) { //由于配置事务后，为手动提交模式；当未配置事务，则为自动提交模式，所以此处手动释放
+			if(conn != null && !TransactionSynchronizationManager.isActualTransactionActive()) { //未配置事务则手动释放
 				org.springframework.jdbc.datasource.DataSourceUtils.releaseConnection(conn, dataSource);
 				if(BaseDAOConfig.showSource) {
-					BaseDAOLog.info("当前查询业务未配置事务，已自动释放连接；若为多次频繁查询业务，可能导致性能降低!");
+					BaseDAOLog.info("当前查询业务未配置事务，已自动释放连接；若为多次连续的查询业务，频繁释放连接可能导致性能降低!");
 				}
 			}
 		} catch (Exception e) {
