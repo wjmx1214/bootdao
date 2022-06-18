@@ -25,7 +25,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.3
+ * @version 1.1.4
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -656,6 +656,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 			}
 			search.pageIndex = allPage;
 			pageIndexChange = true; //分页索引已被重置
+			dataSql = search.SQL + BaseDAOUtil.appendPage(search.pageIndex, search.pageSize);
 			list = isMap ? (List<T>) super.getMaps(dataSql, search.params) : super.getEntitys(dataSql, clz, search.params);
 		}
 		if(search.pageSize < 1) {
@@ -711,6 +712,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 			}
 			pageIndex = allPage;
 			pageIndexChange = true; //分页索引已被重置
+			dataSql = sql + BaseDAOUtil.appendPage(pageIndex, pageSize);
 			list = isMap ? (List<T>) super.getMaps(dataSql, params) : super.getEntitys(dataSql, clz, params);
 		}
 		if(pageSize < 1) {
