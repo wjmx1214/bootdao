@@ -21,6 +21,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import com.boot.dao.api.IBaseJDBC;
 import com.boot.dao.config.BaseDAOConfig;
 import com.boot.dao.mapping.BaseColumnMapping;
@@ -32,7 +34,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.3
+ * @version 1.1.4
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
@@ -186,7 +188,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		try {
 			if(rs != null) rs.close();
 			if(ps != null) ps.close();
-			if(conn != null && conn.getAutoCommit()) { //由于配置事务后，为手动提交模式；当未配置事务，则为自动提交模式，所以此处手动释放
+			if(conn != null && !TransactionSynchronizationManager.isActualTransactionActive()) { //未配置事务则手动释放
 				org.springframework.jdbc.datasource.DataSourceUtils.releaseConnection(conn, super.getDataSource());
 				if(BaseDAOConfig.showSource) {
 					BaseDAOLog.info("当前增删改业务未配置事务，已自动释放连接；请检查是否遗漏事务声明!");
@@ -533,7 +535,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 							if(cm.columnName.equals(columnName)) {
 								key = convertToJavaType(keyClz, value);
 								if(key == null) {
-									return map; //当不是指定的3中基础类型时，直接返回空集
+									return map; //当不是指定的3种基础类型时，直接返回空集
 								}
 							}
 						}
