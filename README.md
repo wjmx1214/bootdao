@@ -29,7 +29,7 @@
 	 <dependency>
         <groupId>com.bootdao</groupId>
         <artifactId>bootdao-spring-boot-starter</artifactId>
-        <version>1.1.4</version>
+        <version>1.1.5</version>
     </dependency>
 
  yml配置(选配)：
@@ -37,8 +37,8 @@
 	bootdao: #关系型数据库持久层函数式封装, 多数据源配置以及更多详细说明请参考IBaseReadme.class
 	    entity-paths: com.xxx.xxx.entity #实体类包路径, 用于entity、dto、vo无差别调用(可指定多个包路径用逗号分隔; 也可不配置, 由@EntityPath注解到Dto上)
 	    #auto-createtime: true #当有创建时间字段时, 是否自动生成值(默认false)(根据名称createTime或createDate推理)(mysql5.x无法同时创建时间和更新时间自动配置, mysql8.x无问题)
-	    #show-sql: true #是否显示SQL语句, 主要用于调试(默认=false)
-	    #show-param: true #是否显示SQL参数, 主要用于调试(默认=false)
+	    #show-sql: true #是否显示SQL语句(默认=false)
+	    #show-param: true #是否显示SQL参数(默认=false)
 	    #show-source: true #是否显示数据源相关信息, 主要用于调试(默认=false)
 	    #different-names: Dto, Vo #实体类与DTO或VO类名不相同的部分, 用于entity、dto、vo无差别调用, 可直接将其作为参数类型(可指定多个名称, 默认Dto,Vo)
 	    #snowflake-id-worker: 1, 1 #基于雪花算法的ID生成器, 工作ID (0~31) / 数据中心ID (0~31) (目前自动生成情况下, 仅用于clickhouse库表主键)(默认1, 1)
