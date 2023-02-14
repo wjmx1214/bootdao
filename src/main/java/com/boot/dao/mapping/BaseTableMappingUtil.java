@@ -8,12 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.boot.dao.api.EntityTable;
+import com.boot.dao.config.BaseDAOConfig;
 import com.boot.dao.util.BaseDAOUtil;
 
 /**
  * 表映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.3
+ * @version 1.1.5
  */
 @SuppressWarnings("unchecked")
 abstract class BaseTableMappingUtil {
@@ -196,6 +197,9 @@ abstract class BaseTableMappingUtil {
 			if("createTime".equals(fieldName) || "createDate".equals(fieldName)) {
 				tm.createTime = cm;
 				tm.hasCreateTime = true;
+				if(cm.datePattern == null || cm.datePattern.length() == 0) {
+					cm.datePattern = "createTime".equals(fieldName) ? BaseDAOConfig.formatTime : BaseDAOConfig.formatDate;
+				}
 			}
 		}
 	}
@@ -212,7 +216,7 @@ abstract class BaseTableMappingUtil {
 			tm.entityMapping = entityTm;
 			tm.mappingType = entityTm.mappingType;
 			if(entityTm.createTime != null) {
-				tm.createTime = new BaseColumnMapping(entityTm.createTime.columnName, null, entityTm.createTime.saveMapping, entityTm.createTime.createMapping, entityTm.createTime.updateMapping, entityTm.createTime.saveEmpty, entityTm.createTime.saveNull, entityTm.createTime.formatTime);
+				tm.createTime = new BaseColumnMapping(entityTm.createTime.columnName, null, entityTm.createTime.saveMapping, entityTm.createTime.createMapping, entityTm.createTime.updateMapping, entityTm.createTime.saveEmpty, entityTm.createTime.saveNull, entityTm.createTime.datePattern);
 			}
 		}
 
@@ -236,7 +240,7 @@ abstract class BaseTableMappingUtil {
 						tm.hasCreateTime = true;
 					}
 				}
-				BaseColumnMapping cm = new BaseColumnMapping(entityCm.columnName, field, entityCm.saveMapping, entityCm.createMapping, entityCm.updateMapping, entityCm.saveEmpty, entityCm.saveNull, entityCm.formatTime);
+				BaseColumnMapping cm = new BaseColumnMapping(entityCm.columnName, field, entityCm.saveMapping, entityCm.createMapping, entityCm.updateMapping, entityCm.saveEmpty, entityCm.saveNull, entityCm.datePattern);
 				tm.columnMappings.put(cm.columnName, cm);
 				tm.fieldMappings.put(fieldName, cm);
 			}else { //本类字段仅作为查询映射
