@@ -55,7 +55,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.1.2
+	@version 1.1.5
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target(ElementType.FIELD) 						// 定义注解的作用目标(类，常量，字段，方法等)
@@ -147,6 +147,6 @@ public @interface Search {
 	 * 用于多个业务共用同一个Search时，区分字段属于哪个业务
 	 * @return String
 	 */
-	String businessName() default "";
+	String searchBusiness() default "";
 
 }
