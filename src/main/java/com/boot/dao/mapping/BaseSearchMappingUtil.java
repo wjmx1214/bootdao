@@ -13,19 +13,20 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 import com.boot.dao.api.Search;
 import com.boot.dao.api.SearchType;
 import com.boot.dao.api.Sort;
+import com.boot.dao.config.BaseDAOConfig;
 import com.boot.dao.util.BaseDAOUtil;
 
 /**
  * 多条件动态查询映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.1
+ * @version 1.1.5
  */
 abstract class BaseSearchMappingUtil {
 
 	//创建查询映射
 	static List<BaseSearchMapping> createSearchMapping(Class<?> clz) {
 		List<BaseSearchMapping> list = new ArrayList<>();
-		Field[] fields = clz.getDeclaredFields(); //获取该类型所有字段，包括私有字段，但不包括继承字段
+		Field[] fields = BaseDAOUtil.getAllFields(clz); //获取该类型所有字段(自身公有，私有，父类公有, 直属父类私有)
 		for (Field field : fields) {
 			if(Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()))
 				continue;//当为final或static修饰时，则跳过
@@ -63,9 +64,9 @@ abstract class BaseSearchMappingUtil {
 			sm.whereKey = search.whereKey();
 			sm.sort = search.sort();
 			sm.whereSQL = search.whereSQL().replace("\n", " ");
-			sm.businessName = search.businessName();
+			sm.searchBusiness = search.searchBusiness();
 			if(search.dateFormat().length() > 0) {
-				sm.formatTime = search.dateFormat();
+				sm.datePattern = search.dateFormat();
 				sm.isDate = true;
 			}
 		}else {
@@ -76,22 +77,22 @@ abstract class BaseSearchMappingUtil {
 			sm.whereKey = "";
 			sm.sort = Sort.NOT;
 			sm.whereSQL = "";
-			sm.businessName = "";
+			sm.searchBusiness = "";
 		}
 
 		//日期格式化
 		if(!sm.isDate && field.isAnnotationPresent(DateTimeFormat.class)) {
 			DateTimeFormat format = field.getAnnotation(DateTimeFormat.class);
 			if(format.pattern().trim().length() > 0) {
-				sm.formatTime = format.pattern();
+				sm.datePattern = format.pattern();
 				sm.isDate = true;
 			}else if(format.iso() != ISO.NONE) {
 				if(format.iso() != ISO.DATE) {
-					sm.formatTime = "yyyy-MM-dd";
+					sm.datePattern = "yyyy-MM-dd";
 				}else if(format.iso() != ISO.TIME) {
-					sm.formatTime = "HH:mm:ss.SSSXXX";
+					sm.datePattern = "HH:mm:ss.SSSXXX";
 				}else if(format.iso() != ISO.DATE_TIME) {
-					sm.formatTime = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+					sm.datePattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 				}
 				sm.isDate = true;
 			}
@@ -99,6 +100,7 @@ abstract class BaseSearchMappingUtil {
 		if(!sm.isDate) {
 			if(field.getType() == Date.class || field.getType() == Date[].class 
 					|| field.getGenericType() instanceof ParameterizedType && ((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0] == Date.class) {
+				sm.datePattern = field.getName().toLowerCase().equals("time") ? BaseDAOConfig.formatTime : BaseDAOConfig.formatDate;
 				sm.isDate = true;
 			}
 		}
