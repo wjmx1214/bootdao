@@ -12,13 +12,12 @@ import java.util.Set;
 
 import com.boot.dao.api.SearchType;
 import com.boot.dao.api.Sort;
-import com.boot.dao.config.BaseDAOConfig;
 import com.boot.dao.util.BaseDAOLog;
 
 /**
  * 多条件动态查询映射
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.2
+ * @version 1.1.5
  */
 public class BaseSearchMapping {
 
@@ -28,21 +27,12 @@ public class BaseSearchMapping {
 	public Sort sort;				//排序规则
 	public String whereKey;			//多处不同where条件定位标识(多表或子查询时, 若出现多处where或having, 则利用此标识进行区分)(默认为空, 即默认只有一处where)
 	public String whereSQL;			//自定义条件语句，用于复杂的条件判断
-	public String businessName;		//业务类型，用于多个业务共用同一个Search时，区分字段属于哪个业务
+	public String searchBusiness;	//业务类型，用于多个业务共用同一个Search时，区分字段属于哪个业务
 	Method getMethod;				//对应的get方法
 	String fieldName;				//对应的Field名称
 
 	boolean isDate;					//是否为日期格式
-	String formatTime = BaseDAOConfig.formatTime;	//当字段为日期类型时的格式化样式
-	private SimpleDateFormat formatUtil;
-	private SimpleDateFormat parseUtil = new SimpleDateFormat(BaseDAOConfig.formatTime);
-
-	private SimpleDateFormat getFormatUtil() {
-		if(this.formatUtil == null) {
-			this.formatUtil = new SimpleDateFormat(formatTime);
-		}
-		return this.formatUtil;
-	}
+	String datePattern;				//当字段为日期类型时的格式化样式
 
 	public Object searchFieldGet(Object search){
 		try {
@@ -124,23 +114,26 @@ public class BaseSearchMapping {
 	
 	private String formatDate(Object item) throws ParseException {
 		if(item != null) {
-			if(item instanceof Date) {
-				return getFormatUtil().format(item);
-			}else if(item instanceof String) {
-				String dateStr = item.toString();
-				Date date = null;
-				try {
-					date = parseUtil.parse(dateStr);
-				} catch (ParseException e) {
-					parseUtil.applyPattern("yyyy-MM-dd");
+			if(datePattern != null && datePattern.length() > 0) {
+				SimpleDateFormat dateFormat = new SimpleDateFormat(datePattern);
+				if(item instanceof Date) {
+					return dateFormat.format(item);
+				}else if(item instanceof String) {
+					String dateStr = item.toString();
+					Date date = null;
 					try {
-						date = parseUtil.parse(dateStr);
-					} catch (ParseException e1) {
-						parseUtil.applyPattern("HH:mm:ss");
-						date = parseUtil.parse(dateStr);
+						date = dateFormat.parse(dateStr);
+					} catch (ParseException e) {
+						dateFormat.applyPattern("yyyy-MM-dd");
+						try {
+							date = dateFormat.parse(dateStr);
+						} catch (ParseException e1) {
+							dateFormat.applyPattern("HH:mm:ss");
+							date = dateFormat.parse(dateStr);
+						}
 					}
+					return dateFormat.format(date);
 				}
-				return getFormatUtil().format(date);
 			}
 			return item.toString();
 		}
