@@ -18,18 +18,22 @@ import com.boot.dao.mapping.BaseSearchMapping;
  * 注意：若该Search类用于多个查询业务共用时，请设置业务类型<br>
  * 正常情况下无需指定，主要用于区分字段属于哪个业务<br>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.2
+ * @version 1.1.5
  */
 public abstract class BaseSearch{
 
+	@Search(isMapping = false)
 	public String SQL;
+	@Search(isMapping = false)
 	public Object[] params;	//参数数组
+	@Search(isMapping = false)
 	boolean append = false; //是否已拼接
 	
 	/**
 	 * 业务类型，用于多个业务共用同一个Search时，区分字段属于哪个业务
 	 */
-	public String businessName;
+	@Search(isMapping = false)
+	public String searchBusiness;
 	
 	public void clear(){
 		this.SQL = null;
@@ -106,7 +110,7 @@ public abstract class BaseSearch{
 		StringBuffer where = new StringBuffer();
 		List<BaseSearchMapping> sms = BaseMappingCache.getSearchMapping(this.getClass());
 		for (BaseSearchMapping sm : sms) {
-			if(sm.businessName.length() > 0 && !sm.businessName.equals(this.businessName)) {
+			if(sm.searchBusiness.length() > 0 && !sm.searchBusiness.equals(this.searchBusiness)) {
 				continue; //该字段不属于本次业务查询；用于多个业务共用XxxSearch类时，过滤非当前业务的列
 			}
 			
