@@ -25,7 +25,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.4
+ * @version 1.1.5
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -285,7 +285,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 					value = null;
 				if(value == null && BaseDAOConfig.autoCreateTime && tm.hasCreateTime){
 					if("createTime".equals(cm.field.getName()) || "createDate".equals(cm.field.getName())) {
-						value = super.formatDate(System.currentTimeMillis(), cm.formatTime); //当创建时间为空时，根据配置决定是否自动生成
+						value = super.formatDate(System.currentTimeMillis(), cm.datePattern); //当创建时间为空时，根据配置决定是否自动生成
 					}
 				}
 				if(!isBlankObj(value) || cm.saveNull || cm.saveEmpty && value != null) {
@@ -299,7 +299,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 			if(tm.createTime.saveMapping && tm.createTime.createMapping) {
 				nameSQL.append(tm.createTime.columnName).append(","); //配置为自动生成，且实体类有创建时间字段，而当前类没有该字段
 				paramSQL.append("?,");
-				paramsList.add(super.formatDate(System.currentTimeMillis(), tm.createTime.formatTime));
+				paramsList.add(super.formatDate(System.currentTimeMillis(), tm.createTime.datePattern));
 			}
 		}
 		int length = nameSQL.length();
@@ -332,7 +332,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 					value = null;
 				if(value == null && BaseDAOConfig.autoCreateTime && tm.hasCreateTime){
 					if("createTime".equals(cm.field.getName()) || "createDate".equals(cm.field.getName())) {
-						value = super.formatDate(System.currentTimeMillis(), cm.formatTime); //当创建时间为空时，根据配置决定是否自动生成
+						value = super.formatDate(System.currentTimeMillis(), cm.datePattern); //当创建时间为空时，根据配置决定是否自动生成
 					}
 				}
 				if(!isBlankObj(value) || cm.saveNull || cm.saveEmpty && value != null) {
@@ -344,7 +344,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 		if(BaseDAOConfig.autoCreateTime && !tm.hasCreateTime && tm.createTime != null) {
 			if(tm.createTime.saveMapping && tm.createTime.createMapping) {
 				setSQL.append(tm.createTime.columnName).append("=?,"); //配置为自动生成，且实体类有创建时间字段，而当前类没有该字段
-				paramsList.add(super.formatDate(System.currentTimeMillis(), tm.createTime.formatTime));
+				paramsList.add(super.formatDate(System.currentTimeMillis(), tm.createTime.datePattern));
 			}
 		}
 		int length = setSQL.length();
@@ -753,7 +753,7 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 			search.SQL = "select * from " + tm.tableName + " where 1=1#{search}";
 		}
 		search.appendWhere();
-		List<T> list = isMap ? (List<T>) super.getMaps(search.SQL, search.params) : super.getEntitys(search.SQL, clz, search.params);
+		List<T> list = isMap ? (List<T>) super.getMapsString(search.SQL, search.params) : super.getEntitys(search.SQL, clz, search.params);
 		search.clear();
 		return list;
 	}
