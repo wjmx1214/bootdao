@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 /**
  * 列映射
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.3
+ * @version 1.1.5
  */
 public class BaseColumnMapping {
 
@@ -16,7 +16,7 @@ public class BaseColumnMapping {
 	public boolean saveEmpty = false;
 	public boolean saveNull = false;
 	public Field field;
-	public String formatTime;
+	public String datePattern;
 
 	public BaseColumnMapping(){}
 
@@ -30,8 +30,8 @@ public class BaseColumnMapping {
 		this.saveNull = saveNull;
 	}
 
-	public BaseColumnMapping(String columnName, Field field, boolean saveMapping, boolean createMapping, boolean updateMapping, boolean saveEmpty, boolean saveNull, String formatTime) {
+	public BaseColumnMapping(String columnName, Field field, boolean saveMapping, boolean createMapping, boolean updateMapping, boolean saveEmpty, boolean saveNull, String datePattern) {
 		this(columnName, field, saveMapping, createMapping, updateMapping, saveEmpty, saveNull);
-		this.formatTime = formatTime;
+		this.datePattern = datePattern;
 	}
 }
