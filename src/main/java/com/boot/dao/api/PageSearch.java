@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * 注意：若该Search类用于多个查询业务共用时，请设置业务类型<br>
  * 正常情况下无需指定，主要用于区分字段属于哪个业务<br>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.2
+ * @version 1.1.5
  */
 public abstract class PageSearch extends BaseSearch{
 
@@ -20,9 +20,12 @@ public abstract class PageSearch extends BaseSearch{
 	 * 总记录SQL, 可以不用编写<br>
 	 * 但考虑到复杂SQL的性能问题，以及自动生成可能产生错误, 此处保留自定义功能, 但查询条件须与SQL相同
 	 */
+	@Search(isMapping = false)
 	public String countSQL;
 	
+	@Search(isMapping = false)
 	public int pageIndex; 	//分页索引
+	@Search(isMapping = false)
 	public int pageSize; 	//分页大小
 	
 	public PageSearch() {
