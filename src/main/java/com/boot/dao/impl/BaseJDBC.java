@@ -34,7 +34,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.4
+ * @version 1.1.5
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
@@ -70,8 +70,9 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 			for(int i=0; i<arrayCount.length; i++) {
 				count+=arrayCount[i];
 			}
-
-		} catch (Exception e) {
+			commitOrRollback(conn, true);
+		}catch(Exception e){
+			commitOrRollback(conn, false);
 			throw e;
 		}finally{
 			this.close(ps, null, conn);
@@ -93,30 +94,37 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		PreparedStatement ps = null;
 		try {
 			if(params != null){
+				BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, false, sql, params);
+				BaseDAOLog.info("Batch execute SQL not print parameters ! 批量执行SQL不输出参数信息!");
+				conn = super.getConnection();
+				ps = conn.prepareStatement(sql);
 				for (int i = 0; i < params.size(); i++) {
-					if(i == 0) {
-						BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, false, sql, params);
-						conn = super.getConnection();
-						ps = conn.prepareStatement(sql);
-						ps.addBatch();
-					}else{
-						ps.addBatch(sql);
+					BaseDAOUtil.setParams(ps, params.get(i)); //设置参数
+					ps.addBatch();
+					if(i % 10000 == 0) {
+						count = batchCount(count, ps.executeBatch());
+						ps.clearBatch();
 					}
 				}
-				for (int i = 0; i < params.size(); i++) {
-					BaseDAOLog.printSQLAndParam(false, BaseDAOConfig.showParam, sql, params);
-					BaseDAOUtil.setParams(ps, params.get(i)); //设置参数
-				}
+				count = batchCount(count, ps.executeBatch());
+				ps.clearBatch();
+				commitOrRollback(conn, true);
+			} else {
+				count = -1;
 			}
-			int[] arrayCount = ps.executeBatch();
-			for(int i=0; i<arrayCount.length; i++) {
-				count+=arrayCount[i];
-			}
-
-		} catch (Exception e) {
+		}catch(Exception e){
+			commitOrRollback(conn, false);
 			throw e;
 		}finally{
 			this.close(ps, null, conn);
+		}
+		return count;
+	}
+	
+	//获取批量执行插入成功的行数
+	private int batchCount(int count, int[] arrayCount) {
+		for(int i=0; i<arrayCount.length; i++) {
+			count+=arrayCount[i];
 		}
 		return count;
 	}
@@ -144,7 +152,9 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				rs = ps.getGeneratedKeys();
 				if(rs.next())	id = rs.getLong(1);
 			}
+			commitOrRollback(conn, true);
 		}catch(Exception e){
+			commitOrRollback(conn, false);
 			throw e;
 		}finally{
 			this.close(ps, rs, conn);
@@ -170,12 +180,27 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 			ps = conn.prepareStatement(sql);
 			BaseDAOUtil.setParams(ps, params); //设置参数
 			count = ps.executeUpdate();
+			commitOrRollback(conn, true);
 		}catch(Exception e){
+			commitOrRollback(conn, false);
 			throw e;
 		}finally{
 			this.close(ps, null, conn);
 		}
 		return count;
+	}
+	
+	//未配置事务 && 手动提交 && 支持事务  则在此提交或回滚
+	private static void commitOrRollback(Connection conn, boolean isCommit) throws Exception{
+		if(conn != null) {
+			if(!TransactionSynchronizationManager.isActualTransactionActive() && !conn.getAutoCommit() && conn.getTransactionIsolation() != 0) {
+				if(isCommit) {
+					conn.commit();
+				}else {
+					conn.rollback();
+				}
+			}
+		}
 	}
 	
 	/**
@@ -191,6 +216,8 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 			if(conn != null && !TransactionSynchronizationManager.isActualTransactionActive()) { //未配置事务则手动释放
 				org.springframework.jdbc.datasource.DataSourceUtils.releaseConnection(conn, super.getDataSource());
 				if(BaseDAOConfig.showSource) {
+					BaseDAOLog.info("conn.getAutoCommit():"+conn.getAutoCommit());
+					BaseDAOLog.info("conn.getTransactionIsolation():"+conn.getTransactionIsolation());
 					BaseDAOLog.info("当前增删改业务未配置事务，已自动释放连接；请检查是否遗漏事务声明!");
 				}
 			}
@@ -418,7 +445,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				for(int i=0; i<jq.columnCount; i++) {
 					BaseColumnMapping cm = tm.columnMappings.get(jq.rs.getMetaData().getColumnLabel(i+1).toLowerCase());
 					if(cm != null) {
-						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatTime);
+						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.datePattern);
 						if(value != null) {
 							cm.field.set(t, value); //为字段赋值
 						}
@@ -471,7 +498,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				for(int i=0; i<jq.columnCount; i++) {
 					BaseColumnMapping cm = jq.resultColumns.get(i);
 					if(cm != null) {
-						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatTime);
+						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.datePattern);
 						if(value != null) {
 							cm.field.set(t, value); //为字段赋值
 						}
@@ -529,7 +556,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 				for(int i=0; i<jq.columnCount; i++) {
 					BaseColumnMapping cm = jq.resultColumns.get(i);
 					if(cm != null) {
-						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.formatTime);
+						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.datePattern);
 						if(value != null) {
 							cm.field.set(t, value); //为字段赋值
 							if(cm.columnName.equals(columnName)) {
@@ -592,12 +619,16 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		Object a = null;
 
 		if(clz == String.class){
-			Object value = rs.getObject(index);
-			if(value != null) {
-				if(value instanceof Date){
-					a = this.formatDate(((Date)value).getTime(), formatTime);
-				}else {
-					a = value.toString();
+			if(formatTime == null || formatTime.length() == 0) {
+				a = rs.getString(index);
+			} else {
+				Object value = rs.getObject(index);
+				if(value != null) {
+					if(value instanceof Date){
+						a = this.formatDate(((Date)value).getTime(), formatTime);
+					}else {
+						a = value.toString();
+					}
 				}
 			}
 		}
