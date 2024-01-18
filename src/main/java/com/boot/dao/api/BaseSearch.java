@@ -18,7 +18,7 @@ import com.boot.dao.mapping.BaseSearchMapping;
  * 注意：若该Search类用于多个查询业务共用时，请设置业务类型<br>
  * 正常情况下无需指定，主要用于区分字段属于哪个业务<br>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.5
+ * @version 1.1.6
  */
 public abstract class BaseSearch{
 
@@ -114,7 +114,7 @@ public abstract class BaseSearch{
 				continue; //该字段不属于本次业务查询；用于多个业务共用XxxSearch类时，过滤非当前业务的列
 			}
 			
-			if("default_search".equals(whereKey) && sm.whereKey.length() == 0 || sm.whereKey.equals(whereKey)) {
+			if(sm.whereKey.length() == 0 || sm.whereKey.equals(whereKey)) {
 				if(sm.sort != Sort.NOT) {
 					sort.append((sort.length() == 0) ? " order by " : ", ");
 					sort.append(sm.tableAs).append(sm.column).append(" ").append(sm.sort.sort);
