@@ -34,7 +34,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.5
+ * @version 1.1.6
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
@@ -94,8 +94,12 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 		PreparedStatement ps = null;
 		try {
 			if(params != null){
-				BaseDAOLog.printSQLAndParam(BaseDAOConfig.showSQL, false, sql, params);
-				BaseDAOLog.info("Batch execute SQL not print parameters ! 批量执行SQL不输出参数信息!");
+				if(BaseDAOConfig.showSQL) {
+					BaseDAOLog.info(sql);
+				}
+				if(BaseDAOConfig.showParam) {
+					BaseDAOLog.info("Batch execute SQL not print parameters ! 批量执行SQL不输出参数信息!");
+				}
 				conn = super.getConnection();
 				ps = conn.prepareStatement(sql);
 				for (int i = 0; i < params.size(); i++) {
