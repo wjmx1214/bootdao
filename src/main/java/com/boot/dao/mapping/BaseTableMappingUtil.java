@@ -8,13 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.boot.dao.api.EntityTable;
+import com.boot.dao.api.Hump;
 import com.boot.dao.config.BaseDAOConfig;
 import com.boot.dao.util.BaseDAOUtil;
 
 /**
  * 表映射工具类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.5
+ * @version 1.1.7
  */
 @SuppressWarnings("unchecked")
 abstract class BaseTableMappingUtil {
@@ -64,10 +65,13 @@ abstract class BaseTableMappingUtil {
 		BaseTableMapping tm = new BaseTableMapping();
 		tm.clz = clz;
 		
+		boolean isHumpClass = false;
+		if(clz.isAnnotationPresent(Hump.class)) {
+			isHumpClass = clz.getAnnotation(Hump.class).isHump();
+		}
 		if(clz.isAnnotationPresent(EntityTable.class)){
 			EntityTable et = clz.getAnnotation(EntityTable.class);
 			tm.tableName = et.value().length() > 0 ? et.value() : et.table();
-			tm.isHump = et.isHump();
 		}
 		
 		if(mybatisPlusExist && tm.tableName.length() == 0){
@@ -84,20 +88,25 @@ abstract class BaseTableMappingUtil {
 		
 		//未找到表名映射时，以类名作为表名，根据驼峰配置转换下划线
 		if(tm.tableName.length() == 0) {
-			tm.tableName = !tm.isHump ? clz.getSimpleName() : BaseDAOUtil.humpToUnderline(clz.getSimpleName());
+			tm.tableName = !isHumpClass ? clz.getSimpleName() : BaseDAOUtil.humpToUnderline(clz.getSimpleName());
 		}
 
-		createColumnMapping(clz, tm); //创建列映射
+		createColumnMapping(clz, tm, isHumpClass); //创建列映射
 		tm.entityMapping  = tm;	//不管自身是否为实体类，都赋值为自身
 		return tm;
 	}
 	
 	//创建列映射
-	private static void createColumnMapping(Class<?> clz, BaseTableMapping tm) throws Exception{
+	private static void createColumnMapping(Class<?> clz, BaseTableMapping tm, boolean isHumpClass) throws Exception{
 		Field[] fields = clz.getDeclaredFields(); //获取该实体所有字段，包括私有字段，但不包括继承字段
 		for (Field f : fields) {
 			if(Modifier.isFinal(f.getModifiers()) || Modifier.isStatic(f.getModifiers()))
 				continue; //当为final或static修饰时，则跳过
+			
+			boolean isHump = isHumpClass; //是否开启驼峰转换
+			if(f.isAnnotationPresent(Hump.class)) {
+				isHump = f.getAnnotation(Hump.class).isHump();
+			}
 			
 			String fieldName = f.getName();
 			String columnName = ""; //列名
@@ -107,7 +116,6 @@ abstract class BaseTableMappingUtil {
 			boolean saveEmpty = false; //是否可保存空字符
 			boolean saveNull = false; //是否可保存null值
 			String formatTime = null;
-			boolean isHump = true; //是否开启驼峰转换
 			boolean isFindId = false; //是否找到ID映射
 
 			if(f.isAnnotationPresent(EntityTable.class)){ //判断该字段是否使用了EntityTable注解
@@ -119,7 +127,6 @@ abstract class BaseTableMappingUtil {
 					updateMapping = et.updateMapping();
 					saveEmpty = et.saveEmpty();
 					saveNull = et.saveNull();
-					isHump = et.isHump();
 					formatTime = et.formatTime();
 					if(et.isId()){
 						isFindId = true;
@@ -176,15 +183,14 @@ abstract class BaseTableMappingUtil {
 			}
 
 			//未配置映射列名时，则以和字段名相同的名称进行映射
-			//若无注解映射，且与数据库的列名也不相同，可在SQL语句中使用 AS 使之对应，但必须配置saveMapping = false
+			//若无注解映射，且与数据库的列名也不相同，可在SQL语句中使用 AS 使之对应，但保存时必须配置saveMapping = false
 			if(columnName.length() == 0){
 				columnName = fieldName;
-				if(isHump && tm.isHump){ //只有字段和类都为开启状态，才会转换
+				if(isHump){ //驼峰转换
 					columnName = BaseDAOUtil.humpToUnderline(columnName);
 				}
 			}
 
-			columnName = columnName.toLowerCase();
 			if(isFindId) {
 				tm.idColumnName = columnName;
 			}
@@ -212,7 +218,6 @@ abstract class BaseTableMappingUtil {
 		}else {
 			tm = new BaseTableMapping();
 			tm.tableName = entityTm.tableName;
-			tm.isHump = entityTm.isHump;
 			tm.entityMapping = entityTm;
 			tm.mappingType = entityTm.mappingType;
 			if(entityTm.createTime != null) {
