@@ -12,7 +12,7 @@ import com.boot.dao.util.BaseDAOLog;
 /**
  * 表映射
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.0
+ * @version 1.1.7
  */
 public class BaseTableMapping {
 
@@ -23,7 +23,6 @@ public class BaseTableMapping {
 	public boolean idAuto = false;				//ID是否为自增, 当字段类型为String时自动生成UUID, clickhouse数据库自动生成雪花算法ID
 	public BaseColumnMapping createTime;		//创建时间列映射(根据名称createTime或createDate推理)
 	public boolean hasCreateTime = false;		//是否有创建时间, 用于DTO、VO类型新增判断(新增记录时根据配置决定是否自动生成)
-	public boolean isHump = true;				//是否开启驼峰转换
 	public BaseTableMapping entityMapping;		//当前映射的实体映射，该值可能为实体映射，也可能为自身映射
 	public int mappingType = 0;					//当前实际的注解方式(没有或未知ID注解=0, EntityTable=1, mybatis-plus=2, JPA=3)(=0时仅支持SQL查询)
 
