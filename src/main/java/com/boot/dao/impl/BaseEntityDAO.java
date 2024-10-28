@@ -25,7 +25,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.5
+ * @version 1.1.7
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	
@@ -217,17 +217,47 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	//---------------------------------------------------------- 对象增删改查 ------------------------------------------------------
 
 	/**
-	 * 新增或更新
+	 * 新增
 	 * @param t
 	 * @return <T>
 	 * @throws Exception
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
+	public <T> T insert(T t) throws Exception{
+		return save(t, 0);
+	}
+	
+	/**
+	 * 更新
+	 * @param t
+	 * @return <T>
+	 * @throws Exception
+	 */
+	@Override
+	public <T> T update(T t) throws Exception{
+		return save(t, 1);
+	}
+	
+	/**
+	 * 新增或更新(组合主键暂不支持，请自行查询是否存在，然后选择新增或者更新)
+	 * @param t
+	 * @return <T>
+	 * @throws Exception
+	 */
+	@Override
 	public <T> T save(T t) throws Exception{
+		return save(t, -1);
+	}
+	
+	//新增或更新
+	@SuppressWarnings("unchecked")
+	public <T> T save(T t, int save) throws Exception{
 		BaseTableMapping tm = this.getTableMapping(t);
 		Serializable id = tm.idFieldGet(t);
-		T old = (id == null) ? null : (T)this.findByUniqueColumn(tm.idColumnName, id, t.getClass(), tm.tableName);
+		T old = null;
+		if(save == 1 || save == -1) {
+			old = (id == null) ? null : (T)this.findByUniqueColumn(tm.idColumnName, id, t.getClass(), tm.tableName);
+		}
 		List<Object> paramsList = new ArrayList<>();
 		boolean isBlank = isBlankObj(id);
 		if(old == null){ //新增
