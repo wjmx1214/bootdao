@@ -3,8 +3,6 @@ package com.boot.dao.config;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 
 import com.boot.dao.mapping.BaseMappingCache;
@@ -13,10 +11,9 @@ import com.boot.dao.util.SnowflakeIdWorker;
 /**
  * bootdao基础配置
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.6
+ * @version 1.1.7
  */
 @Configuration
-@EnableAutoConfiguration(exclude = JdbcTemplateAutoConfiguration.class)
 public class BaseDAOConfig {
 
 	public static String[] entityPaths; 	//实体类包路径, 用于entity、dto、vo无差别调用(可指定多个包路径用逗号分隔; 也可不配置由@EntityPath注解到Dto上)
