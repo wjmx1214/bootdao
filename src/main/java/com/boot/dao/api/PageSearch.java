@@ -8,11 +8,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 多条件动态查询父类(分页)<br>
- * 注意：若该Search类用于多个查询业务共用时，请设置业务类型<br>
- * 正常情况下无需指定，主要用于区分字段属于哪个业务<br>
+ * 多条件动态查询父类(分页)
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.5
+ * @version 1.1.7
  */
 public abstract class PageSearch extends BaseSearch{
 
@@ -80,7 +78,7 @@ public abstract class PageSearch extends BaseSearch{
 	}
 	
 	public static String getCountSQL(String sql) {
-		sql = sql.replace("\r\n", " ").replace("\n", " ").replace("\r", " ");
+		sql = sql.replace("\r\n", " ").replace("\n", " ").replace("\t", " ");
 		String countSQL = getBaseCountSQL(sql);
 		return getUnionCountSQL(countSQL);
 	}
