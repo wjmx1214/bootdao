@@ -34,7 +34,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.6
+ * @version 1.1.7
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 
@@ -447,7 +447,7 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
 					t = (T)clz.getDeclaredConstructors()[0].newInstance(outer);//动态生成泛型的实例(内部类，通过外部类实例创建)
 				}
 				for(int i=0; i<jq.columnCount; i++) {
-					BaseColumnMapping cm = tm.columnMappings.get(jq.rs.getMetaData().getColumnLabel(i+1).toLowerCase());
+					BaseColumnMapping cm = tm.columnMappings.get(jq.rs.getMetaData().getColumnLabel(i+1));
 					if(cm != null) {
 						Object value = this.getValueByJavaType(jq.rs, i+1, cm.field.getType(), cm.datePattern);
 						if(value != null) {
