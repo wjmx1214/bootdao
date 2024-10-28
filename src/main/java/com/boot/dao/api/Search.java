@@ -55,7 +55,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.1.5
+	@version 1.1.7
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target(ElementType.FIELD) 						// 定义注解的作用目标(类，常量，字段，方法等)
@@ -89,13 +89,6 @@ public @interface Search {
 	String column() default "";
 	
 	/**
-	 * 是否开启驼峰转换<br>
-	 * 可省去配置列名(true=开启)
-	 * @return boolean
-	 */
-	boolean isHump() default true;
-	
-	/**
 	 * 是否排序<br>
 	 * 声明在前的属性优先加入排序规则<br>
 	 * 且不影响该属性作为查询条件(默认="")<br>
@@ -117,7 +110,6 @@ public @interface Search {
 	 * 用于 or 或复杂的条件判断<br>
 	 * 例：whereSQL = "and (xx = ? or xxx = ? or xxxx = ?)"<br>
 	 * 例：whereSQL = "and (xx like %? or xxx like %?% or xxxx = ?)"<br>
-	 * 注意：当驼峰字段名转为下划线后，找不到对应的列不会进行拼接，须设置一个表中存在的‘任意’列名<br>
 	 * 当该值不为空时，则直接并且只拼接该注解属性值<br>
 	 * 并根据?号个数添加对应的参数，当为字符串类型时，带逗号的参数会进行分割对应<br>
 	 * 集合数组类型会以?号个数做匹配，多余的舍弃，不足则会抛出索引异常<br>
@@ -141,12 +133,5 @@ public @interface Search {
 	 * @return boolean
 	 */
 	boolean isMapping() default true;
-	
-	/**
-	 * 业务类型<br>
-	 * 用于多个业务共用同一个Search时，区分字段属于哪个业务
-	 * @return String
-	 */
-	String searchBusiness() default "";
 
 }
