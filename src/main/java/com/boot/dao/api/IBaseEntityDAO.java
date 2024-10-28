@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * 实体封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.3
+ * @version 1.1.7
  */
 public interface IBaseEntityDAO extends IBaseJDBC{
 
@@ -140,6 +140,22 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 * @return Map<String, String>
 	 */
 	Map<String, String> getRowOneString(String sql, Object... params);
+	
+	/**
+	 * 新增
+	 * @param t
+	 * @return <T>
+	 * @throws Exception
+	 */
+	<T> T insert(T t) throws Exception;
+	
+	/**
+	 * 更新
+	 * @param t
+	 * @return <T>
+	 * @throws Exception
+	 */
+	<T> T update(T t) throws Exception;
 	
 	/**
 	 * 新增或更新
