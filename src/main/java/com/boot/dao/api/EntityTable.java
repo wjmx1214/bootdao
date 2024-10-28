@@ -24,7 +24,7 @@ import org.springframework.core.annotation.AliasFor;
 	}
 	</pre>
 	@author 2020-12-01 create wang.jia.le
-	@version 1.1.3
+	@version 1.1.7
 **/
 @Retention(RetentionPolicy.RUNTIME) 			// 注解会在class字节码文件中存在，在运行时可以通过反射获取到
 @Target({ElementType.FIELD,ElementType.TYPE}) 	// 定义注解的作用目标(类，常量，字段，方法等)
@@ -105,13 +105,6 @@ public @interface EntityTable {
 	 * @return boolean
 	 */
 	boolean saveNull() default false;
-	
-	/**
-	 * 是否开启驼峰转换(true=开启)<br>
-	 * 只有字段和类都为开启状态，才会转换
-	 * @return boolean
-	 */
-	boolean isHump() default true;
 	
 	/**
 	 * <pre>
