@@ -19,7 +19,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 查询封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.4
+ * @version 1.1.7
  */
 class BaseJDBCQuery {
 	
@@ -73,7 +73,7 @@ class BaseJDBCQuery {
 		this.columnCount = rs.getMetaData().getColumnCount();
 		this.resultColumns = new ArrayList<>();
 		for(int i=0; i<this.columnCount; i++) {
-			BaseColumnMapping cm = tm.columnMappings.get(this.rs.getMetaData().getColumnLabel(i+1).toLowerCase());
+			BaseColumnMapping cm = tm.columnMappings.get(this.rs.getMetaData().getColumnLabel(i+1));
 			this.resultColumns.add(cm);
 		}
 		return this.rs;
