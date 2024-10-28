@@ -15,10 +15,8 @@ import com.boot.dao.mapping.BaseSearchMapping;
 
 /**
  * 多条件动态查询父类<br>
- * 注意：若该Search类用于多个查询业务共用时，请设置业务类型<br>
- * 正常情况下无需指定，主要用于区分字段属于哪个业务<br>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.6
+ * @version 1.1.7
  */
 public abstract class BaseSearch{
 
@@ -28,12 +26,6 @@ public abstract class BaseSearch{
 	public Object[] params;	//参数数组
 	@Search(isMapping = false)
 	boolean append = false; //是否已拼接
-	
-	/**
-	 * 业务类型，用于多个业务共用同一个Search时，区分字段属于哪个业务
-	 */
-	@Search(isMapping = false)
-	public String searchBusiness;
 	
 	public void clear(){
 		this.SQL = null;
@@ -59,12 +51,19 @@ public abstract class BaseSearch{
 		List<Object> paramsList = new ArrayList<>();
 		Map<String, List<Object>> paramsMap = new LinkedHashMap<>();
 		Map<String, String> whereKeys = findWhereKey();
-		List<String> qualifiers = this.findQualifier(SQL);
+		List<String> qualifiers = findQualifier(SQL);
 		for (String qualifier : qualifiers) {
 			String whereKey = qualifier.trim();
 			whereKey = whereKeys.get(whereKey.substring(2, whereKey.length() - 1));
 			whereKey = whereKey == null ? "default_search" : whereKey;
 			String where = this.appendWhereAndParam(whereKey, paramsList, paramsMap);
+			if (!isAppendAnd(SQL, qualifier)){
+				if(where.length() == 0 || where.startsWith(" order")) {
+					where = " 1=1 " + where;
+				} else {
+					where = where.substring(4, where.length());
+				}
+			}
 			SQL = SQL.replace(qualifier, where);
 			if(countSQL != null) {
 				countSQL = countSQL.replace(qualifier, where);
@@ -86,7 +85,22 @@ public abstract class BaseSearch{
 		return map;
 	}
 	
-	private List<String> findQualifier(String str) {
+	//第一个条件是否拼接 and 关键字
+	private static boolean isAppendAnd(String sql, String qualifier) {
+		boolean appendAnd = true;
+		String[] strs = sql.substring(0, sql.indexOf(qualifier)).replace("\r\n", "").replace("\n", "").replace("\t", "").toLowerCase().split(" ");
+		for (int i = strs.length-1; i >= 0; i--) {
+			if(strs[i].length() > 0) {
+				if("where".equals(strs[i]) || "having".equals(strs[i]) || "and".equals(strs[i]) || "or".equals(strs[i])) {
+					appendAnd = false;
+				}
+				break;
+			}
+		}
+		return appendAnd;
+	}
+	
+	private static List<String> findQualifier(String str) {
 		List<String> list = new ArrayList<>();
 		Matcher matcher = Pattern.compile("(\\s*#\\{.*?\\})").matcher(str); //prefix = "#"
 		while (matcher.find()) {
@@ -110,10 +124,6 @@ public abstract class BaseSearch{
 		StringBuffer where = new StringBuffer();
 		List<BaseSearchMapping> sms = BaseMappingCache.getSearchMapping(this.getClass());
 		for (BaseSearchMapping sm : sms) {
-			if(sm.searchBusiness.length() > 0 && !sm.searchBusiness.equals(this.searchBusiness)) {
-				continue; //该字段不属于本次业务查询；用于多个业务共用XxxSearch类时，过滤非当前业务的列
-			}
-			
 			if(sm.whereKey.length() == 0 || sm.whereKey.equals(whereKey)) {
 				if(sm.sort != Sort.NOT) {
 					sort.append((sort.length() == 0) ? " order by " : ", ");
@@ -164,7 +174,7 @@ public abstract class BaseSearch{
 	}
 
 	//未做参数个数验证，可能导致SQL错误
-	private void appendWhereSQLParam(Object value, List<Object> params, String whereSQL) {
+	private static void appendWhereSQLParam(Object value, List<Object> params, String whereSQL) {
 		List<String> symbol = getWhereSQLSymbol(whereSQL);
 		if(value instanceof String) {
 			String[] values = value.toString().split(",");
@@ -179,7 +189,7 @@ public abstract class BaseSearch{
 			appendWhereSQLSymbol(value, params, symbol.get(i));
 		}
 	}
-	private List<String> getWhereSQLSymbol(String whereSQL) {
+	private static List<String> getWhereSQLSymbol(String whereSQL) {
 		String m = "([\\s|=]\\?[\\s|\\)])|(\\s%\\?[\\s|\\)])|(\\s\\?%[\\s|\\)])|(\\s%\\?%[\\s|\\)])";
 		Matcher matcher = Pattern.compile(m).matcher(whereSQL);
 		List<String> symbol = new ArrayList<>();
@@ -188,7 +198,7 @@ public abstract class BaseSearch{
 		}
 		return symbol;
 	}
-	private void appendWhereSQLSymbol(Object value, List<Object> params, String symbol) {
+	private static void appendWhereSQLSymbol(Object value, List<Object> params, String symbol) {
 		if(symbol.indexOf("%?%") != -1) {
 			params.add("%" + value + "%");
 		}else if(symbol.indexOf("%?") != -1) {
@@ -200,13 +210,13 @@ public abstract class BaseSearch{
 		}
 	}
 
-	private void appendBetween(Object value, List<Object> params) {
+	private static void appendBetween(Object value, List<Object> params) {
 		String[] array = value.toString().split(",");
 		params.add(array[0]);
 		params.add(array.length > 1 ? array[1] : array[0]);
 	}
 
-	private StringBuffer appendInOrNotIn(Object value, List<Object> params) {
+	private static StringBuffer appendInOrNotIn(Object value, List<Object> params) {
 		StringBuffer question = new StringBuffer("(");
 		String[] array = value.toString().split(",");
 		for (String item : array) {
@@ -217,7 +227,7 @@ public abstract class BaseSearch{
 		return question;
 	}
 	
-	private void appendWhereLike(String value, List<Object> params, SearchType searchType) {
+	private static void appendWhereLike(String value, List<Object> params, SearchType searchType) {
 		if(searchType == SearchType.like_left) {
 			params.add("%" + value);
 		}else if(searchType == SearchType.like_right) {
