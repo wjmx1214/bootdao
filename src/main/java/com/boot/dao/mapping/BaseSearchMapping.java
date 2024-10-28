@@ -17,17 +17,16 @@ import com.boot.dao.util.BaseDAOLog;
 /**
  * 多条件动态查询映射
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.5
+ * @version 1.1.7
  */
 public class BaseSearchMapping {
 
 	public SearchType searchType;	//查询方式(默认=eq)
 	public String tableAs;			//表别名(默认="")
-	public String column;			//列名或列别名(默认=Field名称)(除非检测到驼峰转换显式关闭, 否则自动进行驼峰转下划线)
+	public String column;			//列名或列别名(默认=Field名称)
 	public Sort sort;				//排序规则
 	public String whereKey;			//多处不同where条件定位标识(多表或子查询时, 若出现多处where或having, 则利用此标识进行区分)(默认为空, 即默认只有一处where)
 	public String whereSQL;			//自定义条件语句，用于复杂的条件判断
-	public String searchBusiness;	//业务类型，用于多个业务共用同一个Search时，区分字段属于哪个业务
 	Method getMethod;				//对应的get方法
 	String fieldName;				//对应的Field名称
 
