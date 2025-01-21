@@ -1,15 +1,20 @@
 package com.boot.dao.api;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 /**
  * JDBC封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.0.7
+ * @version 1.2.0
  */
 public interface IBaseJDBC {
+	
+	void setDataSource(String dataSourceName, DataSource dataSource) throws SQLException;
 	
 	/**
 	 * 批量处理
