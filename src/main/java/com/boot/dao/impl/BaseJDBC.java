@@ -34,13 +34,9 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.7
+ * @version 1.2.0
  */
-public abstract class BaseJDBC extends BaseSource implements IBaseJDBC{
-
-	public BaseJDBC(String dataSourceName, String transactionManagerName) {
-		super(dataSourceName, transactionManagerName);
-	}
+public abstract class BaseJDBC extends BaseSource implements IBaseJDBC {
 	
 	//----------------------------------------------------------增删改-----------------------------------------------------
 
