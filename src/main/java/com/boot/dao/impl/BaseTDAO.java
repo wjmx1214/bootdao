@@ -21,9 +21,10 @@ import com.boot.dao.util.BaseDAOLog;
  * 可指定一个带数据源的DAO来构造, 若未指定则默认为BaseDAO
  * @param <T>
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.3
+ * @version 1.2.0
  */
 @Import(BaseDAO.class)
+@Deprecated
 public abstract class BaseTDAO<T>{
 	
 	private Class<T> classT; //泛型的实际类型
