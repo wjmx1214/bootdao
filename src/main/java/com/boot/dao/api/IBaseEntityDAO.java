@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * 实体封装接口
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.7
+ * @version 1.2.0
  */
 public interface IBaseEntityDAO extends IBaseJDBC{
 
@@ -293,6 +293,14 @@ public interface IBaseEntityDAO extends IBaseJDBC{
 	 */
 	@SuppressWarnings("rawtypes")
 	Page<Map> pageMap(int pageIndex, int pageSize, String sql, Object... params);
+	
+	/**
+	 * 动态条件查询, 单表且无子查询可省略SQL<br>
+	 * @param search
+	 * @param clz
+	 * @return T<T>
+	 */
+	<T> T searchOne(BaseSearch search, Class<T> clz);
 	
 	/**
 	 * 动态条件查询, 单表且无子查询可省略SQL<br>
