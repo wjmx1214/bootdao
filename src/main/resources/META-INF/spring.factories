@@ -1,6 +1,4 @@
 # Auto Configure
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.boot.dao.impl.BaseDAO,\
-com.boot.dao.impl.BaseDAO1,\
-com.boot.dao.impl.BaseDAO2
+com.boot.dao.config.BaseSourceMoreConfig
 
