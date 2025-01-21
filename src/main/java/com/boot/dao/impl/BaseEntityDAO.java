@@ -25,13 +25,9 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * 实体封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.7
+ * @version 1.2.0
  */
 public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
-	
-	public BaseEntityDAO(String dataSourceName, String transactionManagerName) {
-		super(dataSourceName, transactionManagerName);
-	}
 
 	//----------------------------------------------------------- 基础API -------------------------------------------------------
 
@@ -754,6 +750,20 @@ public abstract class BaseEntityDAO extends BaseJDBC implements IBaseEntityDAO{
 	}
 	
 	//-------------------------------------------------------- 动态查询 -------------------------------------------------------
+	
+	/**
+	 * 动态条件查询, 单表且无子查询可省略SQL<br>
+	 * @param search
+	 * @param clz
+	 * @return T<T>
+	 */
+	public <T> T searchOne(BaseSearch search, Class<T> clz){
+		List<T> list = search(Map.class.isAssignableFrom(clz), search, clz);
+		if(list.size() > 0) {
+			return list.get(0);
+		}
+		return null;
+	}
 	
 	/**
 	 * 动态条件查询, 单表且无子查询可省略SQL<br>
