@@ -28,7 +28,7 @@
 	 <dependency>
         <groupId>com.bootdao</groupId>
         <artifactId>bootdao-spring-boot-starter</artifactId>
-        <version>1.2.0</version>
+        <version>1.2.1</version>
     </dependency>
 
  yml配置(选配)：
@@ -59,6 +59,11 @@
 	public class StuService implements IStuService{
 	   @Autowired
 	   private IBaseDAO baseDAO;
+	   
+	   @Autowired
+      @Qualifier("mysql") //mysql数据源
+      private IBaseDAO mysql;
+	   
 	   
 		@Override
 		public void list() throws Exception{
