@@ -3,7 +3,7 @@ package com.boot.dao.api;
 /**
  * 使用示例与详细描述请查看readme()
  * @author 2020-12-01 create wang.jia.le	email	wjmx1214@sina.com
- * @version 1.2.0
+ * @version 1.2.1
  */
 public interface IBaseReadme {
 
@@ -31,7 +31,7 @@ public interface IBaseReadme {
 	 <dependency>
 	    <groupId>com.bootdao</groupId>
 	    <artifactId>bootdao-spring-boot-starter</artifactId>
-	    <version>1.2.0</version>
+	    <version>1.2.1</version>
 	</dependency>
 
 
@@ -64,6 +64,10 @@ public interface IBaseReadme {
 	public class StuService implements IStuService{
 	    +@Autowired
 	    private IBaseDAO baseDAO;
+	    
+	    +@Autowired
+        +@Qualifier("mysql") //mysql数据源
+        private IBaseDAO mysql;
 	    
 	    +@Override
 	    public void list() throws Exception{
