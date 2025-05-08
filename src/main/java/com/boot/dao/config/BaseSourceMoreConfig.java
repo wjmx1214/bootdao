@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.sql.DataSource;
 
@@ -27,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 多数据源默认配置类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.2.0
+ * @version 1.2.1
  */
 @Slf4j
 @Component
@@ -79,17 +80,20 @@ public class BaseSourceMoreConfig {
 		}
 		
 		// 注册数据源和事务管理器
-		dataSources.forEach((dataSourceName, dataSource) -> {
+		for (Entry<String, DataSource> en : dataSources.entrySet()) {
+			String dataSourceName = en.getKey();
+			DataSource dataSource = en.getValue();
 			if(!"dataSource".equals(dataSourceName)) {
 				registerDataSourceBean("_" + dataSourceName, dataSource, registry); // 注册数据源
 				TransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
 				String transactionManagerName = "transactionManager_" + dataSourceName;
-				registerTransactionManager(transactionManagerName, transactionManager, registry); // 注册事务管理器
+		        boolean isPrimary = dataSourceName.equals(primaryDataSourceName); // 设置主数据源对应的事务管理器为 primary  
+				registerTransactionManager(transactionManagerName, transactionManager, registry, isPrimary); // 注册事务管理器
 				Map<DataSource, String> dm = new HashMap<>();
 				dm.put(dataSource, transactionManagerName);
 				dms.put(dataSourceName, dm);
 			}
-		});
+		}
 
 		// 统一注册bootdao数据源
 		registryBootdao(registry, dms, primaryDataSourceName);
@@ -103,7 +107,7 @@ public class BaseSourceMoreConfig {
 			dm.forEach((dataSource, transactionManagerName) -> {
 				// 创建一个 GenericBeanDefinition 以定义 BaseDAO 的 Bean
 				GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
-				beanDefinition.setBeanClass(IBaseDAO.class); // 设置 Bean 类
+				beanDefinition.setBeanClass(BaseDAO.class); // 设置 Bean 类
 
 				// 定义 Bean 的实例化逻辑
 				beanDefinition.setInstanceSupplier(() -> {
@@ -141,11 +145,15 @@ public class BaseSourceMoreConfig {
 
 	// 注册事务管理器方法
 	private void registerTransactionManager(String name, TransactionManager transactionManager,
-			BeanDefinitionRegistry registry) {
+			BeanDefinitionRegistry registry, boolean primary) {
 		GenericBeanDefinition transactionManagerDefinition = new GenericBeanDefinition();
 		transactionManagerDefinition.setBeanClass(transactionManager.getClass());
 		transactionManagerDefinition.setInstanceSupplier(() -> transactionManager); // 直接返回实例
 
+		if (primary) {  
+			transactionManagerDefinition.setPrimary(true);  // 设置主事务管理器  
+		}  
+		
 		// 注册事务管理器到 Spring 的 BeanDefinitionRegistry
 		registry.registerBeanDefinition(name, transactionManagerDefinition);
 	}
