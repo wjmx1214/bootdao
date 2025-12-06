@@ -28,7 +28,7 @@
 	 <dependency>
         <groupId>com.bootdao</groupId>
         <artifactId>bootdao-spring-boot-starter</artifactId>
-        <version>1.2.1</version>
+        <version>1.2.2</version>
     </dependency>
 
  yml配置(选配)：
@@ -39,6 +39,7 @@
 	    #show-sql: true #是否显示SQL语句(默认=false)
 	    #show-param: true #是否显示SQL参数(默认=false)
 	    #show-source: true #是否显示数据源相关信息, 主要用于调试(默认=false)
+		#save-batch-size: 50000 #批量执行SQL单次最多提交数量(默认10000行)
 	    #different-names: Dto, Vo #实体类与DTO或VO类名不相同的部分, 用于entity、dto、vo无差别调用, 可直接将其作为参数类型(可指定多个名称, 默认Dto,Vo)
 	    #snowflake-id-worker: 1, 1 #基于雪花算法的ID生成器, 工作ID (0~31) / 数据中心ID (0~31) (目前自动生成情况下, 仅用于clickhouse库表主键)(默认1, 1)
 </pre>
