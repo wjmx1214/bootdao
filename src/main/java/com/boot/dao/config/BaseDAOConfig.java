@@ -11,7 +11,7 @@ import com.boot.dao.util.SnowflakeIdWorker;
 /**
  * bootdao基础配置
  * @author 2020-12-01 create wang.jia.le
- * @version 1.1.7
+ * @version 1.2.2
  */
 @Configuration
 public class BaseDAOConfig {
@@ -21,6 +21,7 @@ public class BaseDAOConfig {
 	public static boolean showSQL; 			//是否显示SQL语句, 主要用于调试(默认=false)
 	public static boolean showParam; 		//是否显示SQL参数, 主要用于调试(默认=false)
 	public static boolean showSource; 		//是否显示数据源相关信息, 主要用于调试(默认=false)
+	public static int saveBatchSize;		//批量执行SQL单次最多提交数量(默认10000行)
 	public static boolean autoCreateTime;	//当有创建时间字段时, 是否自动生成值(默认false)(根据名称createTime或createDate推理)(mysql5.x无法同时创建时间和更新时间自动配置, mysql8.x无问题)
 	public static String formatTime = "yyyy-MM-dd HH:mm:ss"; //时间类型默认格式化(具体参考EntityTable.formatTime描述)
 	public static String formatDate = "yyyy-MM-dd"; //日期类型默认格式化(具体参考EntityTable.formatTime描述)
@@ -49,6 +50,11 @@ public class BaseDAOConfig {
 	@Value("${bootdao.show-source:false}")
 	public void showSource(boolean showSource) {
 		BaseDAOConfig.showSource = showSource;
+	}
+	
+	@Value("${bootdao.save-batch-size:10000}")
+	public void saveBatchSize(int saveBatchSize) {
+		BaseDAOConfig.saveBatchSize = saveBatchSize;
 	}
 	
 	@Value("${bootdao.auto-createtime:false}")
