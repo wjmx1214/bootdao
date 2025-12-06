@@ -34,7 +34,7 @@ import com.boot.dao.util.BaseDAOUtil;
 /**
  * JDBC封装类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.2.0
+ * @version 1.2.2
  */
 public abstract class BaseJDBC extends BaseSource implements IBaseJDBC {
 	
@@ -85,33 +85,30 @@ public abstract class BaseJDBC extends BaseSource implements IBaseJDBC {
 	 */
 	@Override
 	public int updateBatchSQL(String sql, List<Object[]> params) throws Exception{
+		if(params == null){
+			return -1;
+		}
 		int count = 0;//受影响行数
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
-			if(params != null){
-				if(BaseDAOConfig.showSQL) {
-					BaseDAOLog.info(sql);
-				}
-				if(BaseDAOConfig.showParam) {
-					BaseDAOLog.info("Batch execute SQL not print parameters ! 批量执行SQL不输出参数信息!");
-				}
-				conn = super.getConnection();
-				ps = conn.prepareStatement(sql);
-				for (int i = 0; i < params.size(); i++) {
-					BaseDAOUtil.setParams(ps, params.get(i)); //设置参数
-					ps.addBatch();
-					if(i % 10000 == 0) {
-						count = batchCount(count, ps.executeBatch());
-						ps.clearBatch();
-					}
-				}
-				count = batchCount(count, ps.executeBatch());
-				ps.clearBatch();
-				commitOrRollback(conn, true);
-			} else {
-				count = -1;
+			if(BaseDAOConfig.showSQL) {
+				BaseDAOLog.info(sql);
 			}
+			if(BaseDAOConfig.showParam) {
+				BaseDAOLog.info("Batch execute SQL not print parameters ! 批量执行SQL不输出参数信息!");
+			}
+			conn = super.getConnection();
+			ps = conn.prepareStatement(sql);
+			for (int i = 0; i < params.size(); i++) {
+				BaseDAOUtil.setParams(ps, params.get(i)); //设置参数
+				ps.addBatch();
+				if((i+1) % BaseDAOConfig.saveBatchSize == 0 || i == params.size()-1) {
+					count = batchCount(count, ps.executeBatch());
+					ps.clearBatch();
+				}
+			}
+			commitOrRollback(conn, true);
 		}catch(Exception e){
 			commitOrRollback(conn, false);
 			throw e;
