@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 多数据源默认配置类
  * @author 2020-12-01 create wang.jia.le
- * @version 1.2.1
+ * @version 1.2.3
  */
 @Slf4j
 @Component
@@ -69,8 +69,8 @@ public class BaseSourceMoreConfig {
 		String primaryDataSourceName = null;
 		List<Object> baomidouDataSources = getBaomidouDataSource(defaultDataSource);
 		if (baomidouDataSources != null) {
-			primaryDataSourceName = (String) baomidouDataSources.get(0);
-			dataSources.putAll((Map<String, DataSource>) baomidouDataSources.get(1));
+			primaryDataSourceName = (String) baomidouDataSources.get(0); //主数据源名称
+			dataSources.putAll((Map<String, DataSource>) baomidouDataSources.get(1)); //所有数据源包含主数据源
 		} else {
 			primaryDataSourceName = "dataSource";
 			dataSources.put(primaryDataSourceName, defaultDataSource);
@@ -84,7 +84,7 @@ public class BaseSourceMoreConfig {
 			String dataSourceName = en.getKey();
 			DataSource dataSource = en.getValue();
 			if(!"dataSource".equals(dataSourceName)) {
-				registerDataSourceBean("_" + dataSourceName, dataSource, registry); // 注册数据源
+				registerDataSourceBean(dataSourceName+"_ds", dataSource, registry); // 注册数据源
 				TransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
 				String transactionManagerName = "transactionManager_" + dataSourceName;
 		        boolean isPrimary = dataSourceName.equals(primaryDataSourceName); // 设置主数据源对应的事务管理器为 primary  
@@ -104,33 +104,55 @@ public class BaseSourceMoreConfig {
 			String primaryDataSourceName) {
 		for (String dataSourceName : dms.keySet()) {
 			Map<DataSource, String> dm = dms.get(dataSourceName);
-			dm.forEach((dataSource, transactionManagerName) -> {
-				// 创建一个 GenericBeanDefinition 以定义 BaseDAO 的 Bean
-				GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
-				beanDefinition.setBeanClass(BaseDAO.class); // 设置 Bean 类
-
-				// 定义 Bean 的实例化逻辑
-				beanDefinition.setInstanceSupplier(() -> {
-					IBaseDAO baseDAO = new BaseDAO(); // 新实例化 BaseDAO 的实现类
-					try {
-						baseDAO.setDataSource("_"+dataSourceName, dataSource); // 设置 DataSource
-					} catch (SQLException e) {
-						log.error(e.getMessage(), e);
-					} 
-					return baseDAO; // 返回初始化好的 BaseDAO 实例
-				});
-				
-				if(!"dataSource".equals(dataSourceName)) {
+			dm.forEach((dataSource, transactionManagerName) -> { // 该MAP只有单条记录, 并不会产生多次循环
+				String dsname = "dataSource".equals(dataSourceName) ? "dataSource" : dataSourceName+"_ds";
+				GenericBeanDefinition beanDefinition = createGenericBeanDefinition(dataSourceName, dataSource); // 创建GenericBeanDefinition
+				if(!registry.containsBeanDefinition(dataSourceName)) {
 					registry.registerBeanDefinition(dataSourceName, beanDefinition);
-					log.info("已将数据源({})注册到IBaseDAO,注册名称为:{},事务管理器名称为:{}", "_"+dataSourceName, dataSourceName, transactionManagerName);
+					log.info("已将数据源({})注册到IBaseDAO,注册名称为:{},事务管理器名称为:{}", dsname, dataSourceName, transactionManagerName);
+				} else {
+					registry.registerBeanDefinition(dataSourceName+"_dao", beanDefinition);
+					
+					log.info("已将数据源({})注册到IBaseDAO,注册名称为:{},事务管理器名称为:{}", dsname, dataSourceName+"_dao", transactionManagerName);
 				}
-				// 主数据源多注册一个别名
+				
+				// 主数据源多注册一个别名(并设置为默认注入源)
 				if (dataSourceName.equals(primaryDataSourceName)) {
-					registry.registerBeanDefinition("baseDAO", beanDefinition);
-					log.info("已将主数据源({})注册到IBaseDAO,注册名称为:{},事务管理器名称为:{}", "_"+primaryDataSourceName, "baseDAO", transactionManagerName);
+					beanDefinition = createGenericBeanDefinition(dataSourceName, dataSource); // 创建GenericBeanDefinition
+					if(!registry.containsBeanDefinition("baseDAO")) {
+						registry.registerBeanDefinition("baseDAO", beanDefinition);
+						beanDefinition.setPrimary(true);
+						log.info("已将主数据源({})注册到IBaseDAO,注册名称为:{},事务管理器名称为:{}", dsname, "baseDAO", transactionManagerName);
+					} else {
+						registry.registerBeanDefinition("baseDAO_dao", beanDefinition);
+						beanDefinition.setPrimary(true);
+						log.info("已将主数据源({})注册到IBaseDAO,注册名称为:{},事务管理器名称为:{}", dsname, "baseDAO_dao", transactionManagerName);
+					}
 				}
 			});
 		}
+	}
+	
+	// 创建一个 GenericBeanDefinition 以定义 BaseDAO 的 Bean
+	private GenericBeanDefinition createGenericBeanDefinition(String dataSourceName, DataSource dataSource) {
+		GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+		beanDefinition.setBeanClass(IBaseDAO.class); // 设置 Bean 类
+
+		// 定义 Bean 的实例化逻辑
+		beanDefinition.setInstanceSupplier(() -> {
+			IBaseDAO baseDAO = new BaseDAO(); // 新实例化 IBaseDAO 的实现类
+			try {
+				if("dataSource".equals(dataSourceName)) {
+					baseDAO.setDataSource(dataSourceName, dataSource); // 设置默认数据源 DataSource
+				} else {
+					baseDAO.setDataSource(dataSourceName+"_ds", dataSource); // 设置 DataSource
+				}
+			} catch (SQLException e) {
+				log.error(e.getMessage(), e);
+			} 
+			return baseDAO; // 返回初始化好的 IBaseDAO 实例
+		});
+		return beanDefinition;
 	}
 
 	// 注册数据源 Bean 到 Spring 容器
