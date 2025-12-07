@@ -15,7 +15,7 @@ import com.boot.dao.util.BaseDAOLog;
 /**
  * 多数据源其它配置创建方式
  * @author 2025-01-20 create wang.jia.le
- * @version 1.2.0
+ * @version 1.2.3
  */
 @SuppressWarnings("unchecked")
 public class DataSourceMoreCreate {
@@ -58,7 +58,7 @@ public class DataSourceMoreCreate {
 					String lowerKey = key.toLowerCase();
 					if (lowerKey.startsWith("spring")) {
 						if (lowerKey.contains("driver-class-name")) {
-							String[] propertyName = lowerKey.split("\\.");
+							String[] propertyName = key.split("\\.");
 							if (!"datasource".equals(propertyName[1].toLowerCase())) {
 								sourceNameMap.put(propertyName[1], 1);
 								flag = true;
@@ -72,8 +72,7 @@ public class DataSourceMoreCreate {
 				for (String sourceName : sourceNameMap.keySet()) {
 					Map<String, String> sourceMap = new HashMap<>();
 					for (String key : allMap.keySet()) {
-						String lowerKey = key.toLowerCase();
-						if (lowerKey.startsWith("spring." + sourceName.toLowerCase())) {
+						if (key.toLowerCase().startsWith("spring." + sourceName.toLowerCase())) {
 							sourceMap.put(key, allMap.get(key).toString());
 						}
 					}
