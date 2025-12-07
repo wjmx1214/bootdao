@@ -28,7 +28,7 @@
 	 <dependency>
         <groupId>com.bootdao</groupId>
         <artifactId>bootdao-spring-boot-starter</artifactId>
-        <version>1.2.2</version>
+        <version>1.2.3</version>
     </dependency>
 
  yml配置(选配)：
